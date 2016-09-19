@@ -7,4 +7,8 @@ import com.sparcs.casino.game.GameImpl;
  */
 public class RouletteImpl extends GameImpl implements Roulette {
 
+	public RouletteImpl() {
+		
+		super();
+	}
 }

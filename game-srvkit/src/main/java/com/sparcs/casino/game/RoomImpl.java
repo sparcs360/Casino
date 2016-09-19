@@ -19,7 +19,7 @@ public class RoomImpl<G extends Game> implements Room<G> {
 	
     private List<Customer> spectators;
 	
-	public RoomImpl(G game) {
+	RoomImpl(G game) {
 
 		this.game = game;
         spectators = new ArrayList<>();
@@ -50,7 +50,7 @@ public class RoomImpl<G extends Game> implements Room<G> {
 	}
 
 	@Override
-	public void leave(Customer customer) {
+	public void exit(Customer customer) {
 
         spectators.remove(customer);
 	}

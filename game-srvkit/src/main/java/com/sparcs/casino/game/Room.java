@@ -15,6 +15,27 @@ import com.sparcs.casino.Customer;
 public interface Room<G extends Game> {
 
 	/**
+	 * Create a new Room with the specified Game installed within it
+	 * 
+	 * @param game The game to install into the Room
+	 * @param <G> The {@link Game} subclass that the room hosts
+	 * @return New Room
+	 */
+	static <G extends Game> Room<G> create(G game) {
+
+		// TODO: Urgh.  Need a better way of creating the required bi-directional
+		// association between Room and Game (required so that the Customer can
+		// be moved from the Game.players collection to the Room.spectators
+		// collection).
+		//
+		// Maybe we'll have the Room observing the Game and watching for
+		// join/leave events
+		Room<G> room = new RoomImpl<G>(game);
+		game.installInto(room);
+		return room;
+	}
+
+	/**
 	 * @return The {@link Game} inside the room.
 	 */
 	G getGame();
@@ -39,9 +60,9 @@ public interface Room<G extends Game> {
     void enter(Customer customer);
 
     /**
-     * Leave the room
+     * Exit the room
      * 
      * @param customer
      */
-    void leave(Customer customer);
+    void exit(Customer customer);
 }
