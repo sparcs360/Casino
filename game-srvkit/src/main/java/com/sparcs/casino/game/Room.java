@@ -30,4 +30,18 @@ public interface Room<G extends Game> {
 	 * {@link Game#getPlayers() players} in the room.
 	 */
 	boolean isEmpty();
+
+	/**
+	 * Enter the room and become a {@link #getSpectators() Spectator}.
+	 * 
+	 * @param customer
+	 */
+    void enter(Customer customer);
+
+    /**
+     * Leave the room
+     * 
+     * @param customer
+     */
+    void leave(Customer customer);
 }

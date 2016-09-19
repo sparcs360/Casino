@@ -42,4 +42,16 @@ public class RoomImpl<G extends Game> implements Room<G> {
 
 		return spectators.isEmpty() && game.getPlayers().isEmpty();
 	}
+
+	@Override
+	public void enter(Customer customer) {
+
+        spectators.add(customer);
+	}
+
+	@Override
+	public void leave(Customer customer) {
+
+        spectators.remove(customer);
+	}
 }

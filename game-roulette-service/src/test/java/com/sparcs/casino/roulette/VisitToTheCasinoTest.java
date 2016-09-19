@@ -86,8 +86,23 @@ public class VisitToTheCasinoTest extends BaseTest {
         			 .findFirst();
         
         assertTrue("Our test room is empty so we should find one", firstEmptyRoom.isPresent());
+        
         Room<Roulette> room = firstEmptyRoom.get();
+        
         assertEquals("Should be our test room", rouletteRoom, room);
+        assertEquals("Should be no spectators", 0, room.getSpectators().size());
+        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
+
+        // Go inside...
+        room.enter(lee);
+        
+        assertEquals("Should be one spectators", 1, room.getSpectators().size());
+        assertTrue("Lee should be a spectator", room.getSpectators().contains(lee));
+        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
+
+        // Leave the room
+        room.leave(lee);
+        
         assertEquals("Should be no spectators", 0, room.getSpectators().size());
         assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
