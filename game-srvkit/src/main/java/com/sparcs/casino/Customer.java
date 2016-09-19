@@ -1,4 +1,4 @@
-package com.sparcs.casino.otherdomains;
+package com.sparcs.casino;
 
 /**
  * Represents a {@link Casino} patron.
