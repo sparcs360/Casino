@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,12 +70,26 @@ public class VisitToTheCasinoTest extends BaseTest {
 
         // Lee enters the Casino
         Customer customer = casino.signIn("Lee", "abc");
+        
         assertEquals("Should be Lee", lee, customer);
         
         // He wants to play Roulette, where's the action?
         List<Room<Roulette>> rooms = casino.getGamingRooms(customer, GameType.ROULETTE);
+        
         assertNotNull("Should find some Roulette Rooms", rooms);
         assertTrue("Our test room should be in the list", rooms.contains(rouletteRoom));
+
+        // Find an empty room...
+        Optional<Room<Roulette>> firstEmptyRoom =
+        		rooms.stream()
+        			 .filter(r -> r.isEmpty())
+        			 .findFirst();
+        
+        assertTrue("Our test room is empty so we should find one", firstEmptyRoom.isPresent());
+        Room<Roulette> room = firstEmptyRoom.get();
+        assertEquals("Should be our test room", rouletteRoom, room);
+        assertEquals("Should be no spectators", 0, room.getSpectators().size());
+        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
         // Go home
         casino.signOut(customer);

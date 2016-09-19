@@ -1,10 +1,13 @@
 package com.sparcs.casino.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sparcs.casino.Casino;
+import com.sparcs.casino.Customer;
 
 /**
  * The base implementation of a gaming room within the {@link Casino}.
- * Subclass this when building your own game.
  * 
  * @author Lee Newfeld
  *
@@ -14,14 +17,29 @@ public class RoomImpl<G extends Game> implements Room<G> {
 
 	private G game;
 	
+    private List<Customer> spectators;
+	
 	public RoomImpl(G game) {
 
 		this.game = game;
+        spectators = new ArrayList<>();
 	}
 
 	@Override
 	public G getGame() {
 		
 		return game;
+	}
+
+	@Override
+	public List<Customer> getSpectators() {
+
+        return spectators;
+	}
+
+	@Override
+	public boolean isEmpty() {
+
+		return spectators.isEmpty() && game.getPlayers().isEmpty();
 	}
 }
