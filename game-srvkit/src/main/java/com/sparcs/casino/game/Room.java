@@ -57,4 +57,11 @@ public interface Room {
      * @param customer
      */
     void exit(Customer customer);
+
+    /**
+     * Execute a single cycle of the game loop.
+     * 
+     * @return true if the game is running 
+     */
+	boolean executeGameLoop();
 }

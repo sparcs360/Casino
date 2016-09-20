@@ -110,6 +110,13 @@ public class VisitToTheCasinoTest extends BaseTest {
         assertEquals("Should be no spectators", 0, room.getSpectators().size());
 
         //####################################################################//
+        // Run a cycle of all game loops
+
+        while( rouletteHall.executeGameLoops() ) {
+        	
+        }
+
+        //####################################################################//
         // Stand up
         room.leave(customer);
 

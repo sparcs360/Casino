@@ -35,4 +35,19 @@ public abstract class GameImpl implements Game {
 
 		return false;
 	}
+
+	/**
+	 * Reset the game state to the point prior to game start
+	 *  
+	 * @param room
+	 */
+	protected abstract void onReset(RoomImpl room);
+
+	/**
+	 * Update the game state
+	 *  
+	 * @param room
+	 * @return true if the game is running
+	 */
+	protected abstract boolean onUpdate(RoomImpl room);
 }

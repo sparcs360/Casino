@@ -3,6 +3,8 @@ package com.sparcs.casino.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -16,6 +18,8 @@ import com.sparcs.casino.Casino;
  * @author Lee Newfeld
  */
 public abstract class HallImpl implements Hall, ApplicationContextAware {
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	protected ApplicationContext applicationContext;
 	
@@ -39,5 +43,21 @@ public abstract class HallImpl implements Hall, ApplicationContextAware {
 	public List<Room> getRooms() {
 
 		return rooms;
+	}
+	
+	@Override
+	public boolean executeGameLoops() {
+
+		log.debug("Executing game loops");
+
+		boolean activity = false;
+		for( Room room : rooms ) {
+
+			if( room.executeGameLoop() ) {
+				activity = true;
+			}
+		}
+		
+		return activity;
 	}
 }

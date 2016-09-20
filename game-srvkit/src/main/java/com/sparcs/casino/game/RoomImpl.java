@@ -3,6 +3,10 @@ package com.sparcs.casino.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sparcs.casino.Casino;
@@ -14,6 +18,10 @@ import com.sparcs.casino.Customer;
  * @author Lee Newfeld
  */
 public abstract class RoomImpl implements Room {
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	private int tick;
 
 	/**
 	 * The {@link GameImpl} inside the {@link Room}
@@ -29,6 +37,12 @@ public abstract class RoomImpl implements Room {
 	protected RoomImpl() {
 
         spectators = new ArrayList<>();
+	}
+	
+	@PostConstruct
+	private void initialise() {
+
+		game.onReset(this);
 	}
 
 	@Override
@@ -73,5 +87,27 @@ public abstract class RoomImpl implements Room {
 	public void exit(Customer customer) {
 
         spectators.remove(customer);
+	}
+
+	/**
+	 * @return The current game time
+	 */
+	public int getTick() {
+
+		return tick;
+	}
+
+    @Override
+	public boolean executeGameLoop() {
+
+		if( isEmpty() ) {
+			log.debug("{}: Empty - nothing to do", this);
+    		return false;
+    	}
+		
+		tick++;
+		log.debug("{}: Tick={}", this, tick);
+
+		return game.onUpdate(this);
 	}
 }
