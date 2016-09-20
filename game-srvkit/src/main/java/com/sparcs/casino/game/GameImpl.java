@@ -12,40 +12,22 @@ import com.sparcs.casino.Customer;
  * 
  * @author Lee Newfeld
  */
-public class GameImpl implements Game {
+public abstract class GameImpl implements Game {
 
-	private Room<? extends Game> room;
 	private List<Customer> players;
 	
-    public GameImpl() {
+	/**
+	 * Constructor
+	 */
+    protected GameImpl() {
 
         players = new ArrayList<>();
     }
-	
-	@Override
-	public void installInto(Room<? extends Game> room) {
-
-		this.room = room;
-	}
 
 	@Override
 	public List<Customer> getPlayers() {
 
 		return players;
-	}
-
-	@Override
-	public void join(Customer player) {
-
-        room.getSpectators().remove(player);
-        players.add(player);
-	}
-
-	@Override
-	public void leave(Customer player) {
-
-        players.remove(player);
-        room.getSpectators().add(player);
 	}
 
 	@Override

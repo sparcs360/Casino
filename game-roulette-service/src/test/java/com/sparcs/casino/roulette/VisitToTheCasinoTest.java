@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -44,13 +45,16 @@ public class VisitToTheCasinoTest extends BaseTest {
     private Casino casino;
     
     private List<Room<? extends Game>> rouletteRooms;
+    
+    @Autowired
+    private RouletteRoom room1;
 
     @Before
-    public void onlyOnce() {
+    public void beforeTest() {
 
         // Setup games and rooms
         rouletteRooms = new ArrayList<>();
-        rouletteRooms.add(Room.create(new RouletteImpl()));
+        rouletteRooms.add(room1);
         
         // Mocks for functionality in other Domains
         lee = Mockito.mock(Customer.class);
@@ -63,17 +67,20 @@ public class VisitToTheCasinoTest extends BaseTest {
 	@Test
 	public void shouldHaveAnEnjoyableTime() {
 
+        //####################################################################//
         // Lee enters the Casino
         Customer customer = casino.signIn("Lee", "abc");
         
         assertEquals("Should be Lee", lee, customer);
         
+        //####################################################################//
         // He wants to play Roulette, where's the action?
         List<Room<Roulette>> rooms = casino.getGamingRooms(customer, GameType.ROULETTE);
         
         assertNotNull("Should find some Rooms", rooms);
         assertEquals("Should be one room", 1, rooms.size());
 
+        //####################################################################//
         // Find an empty room...
         Optional<Room<Roulette>> firstEmptyRoom =
         		rooms.stream()
@@ -87,6 +94,7 @@ public class VisitToTheCasinoTest extends BaseTest {
         assertEquals("Should be no spectators", 0, room.getSpectators().size());
         assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
+        //####################################################################//
         // Go inside...
         room.enter(lee);
         
@@ -94,32 +102,37 @@ public class VisitToTheCasinoTest extends BaseTest {
         assertTrue("Lee should be a spectator", room.getSpectators().contains(lee));
         assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
+        //####################################################################//
         // It should be a Roulette gaming room
         Roulette game = room.getGame();
 
         assertNotNull("Room should contain a game", game);
         assertFalse("Games in empty rooms shouldn't be running", game.isRunning());
 
+        //####################################################################//
         // Take a chair
-        game.join(customer);
+        room.join(customer);
         
         assertEquals("Should be one player", 1, room.getGame().getPlayers().size());
         assertTrue("Lee should be a player", game.getPlayers().contains(lee));
         assertEquals("Should be no spectators", 0, room.getSpectators().size());
 
+        //####################################################################//
         // Stand up
-        game.leave(customer);
+        room.leave(customer);
 
         assertEquals("Should be one spectator", 1, room.getSpectators().size());
         assertTrue("Lee should be a spectator", room.getSpectators().contains(lee));
         assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
+        //####################################################################//
         // Leave the room
         room.exit(lee);
         
         assertEquals("Should be no spectators", 0, room.getSpectators().size());
         assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
+        //####################################################################//
         // Go home
         casino.signOut(customer);
 	}

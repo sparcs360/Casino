@@ -3,6 +3,8 @@ package com.sparcs.casino.game;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.sparcs.casino.Casino;
 import com.sparcs.casino.Customer;
 
@@ -13,22 +15,29 @@ import com.sparcs.casino.Customer;
  *
  * @param <G> The {@link Game} subclass that the room hosts 
  */
-public class RoomImpl<G extends Game> implements Room<G> {
+public abstract class RoomImpl<G extends Game> implements Room<G> {
 
-	private G game;
+	/**
+	 * The {@link GameImpl} inside the {@link Room}
+	 */
+	@Autowired
+	private GameImpl game;
 	
     private List<Customer> spectators;
 	
-	RoomImpl(G game) {
+    /**
+     * Constructor
+     */
+	protected RoomImpl() {
 
-		this.game = game;
         spectators = new ArrayList<>();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public G getGame() {
 		
-		return game;
+		return (G)game;
 	}
 
 	@Override
@@ -47,6 +56,20 @@ public class RoomImpl<G extends Game> implements Room<G> {
 	public void enter(Customer customer) {
 
         spectators.add(customer);
+	}
+
+	@Override
+	public void join(Customer player) {
+
+        getSpectators().remove(player);
+        game.getPlayers().add(player);
+	}
+
+	@Override
+	public void leave(Customer player) {
+
+        game.getPlayers().remove(player);
+        getSpectators().add(player);
 	}
 
 	@Override
