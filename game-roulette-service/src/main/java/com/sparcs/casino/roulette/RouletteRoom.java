@@ -7,6 +7,6 @@ import com.sparcs.casino.game.Room;
  *  
  * @author Lee Newfeld
  */
-public interface RouletteRoom extends Room<Roulette> {
+public interface RouletteRoom extends Room {
 
 }

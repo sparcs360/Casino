@@ -12,10 +12,8 @@ import com.sparcs.casino.Customer;
  * The base implementation of a gaming room within the {@link Casino}.
  * 
  * @author Lee Newfeld
- *
- * @param <G> The {@link Game} subclass that the room hosts 
  */
-public abstract class RoomImpl<G extends Game> implements Room<G> {
+public abstract class RoomImpl implements Room {
 
 	/**
 	 * The {@link GameImpl} inside the {@link Room}
@@ -33,11 +31,10 @@ public abstract class RoomImpl<G extends Game> implements Room<G> {
         spectators = new ArrayList<>();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public G getGame() {
+	public Game getGame() {
 		
-		return (G)game;
+		return game;
 	}
 
 	@Override

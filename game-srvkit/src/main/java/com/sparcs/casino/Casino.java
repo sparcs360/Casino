@@ -27,12 +27,12 @@ public interface Casino {
     /**
      * Retrieve a list of {@link Room}s that are hosting a particular
      * {@link GameType type of game}.
-     *  
-     * @param customer
-     * @param gameType
-     * @return
+     * 
+     * @param customer The Customer doing the browsing
+     * @param gameType The type of Game the Customer is looking for
+     * @return The list of applicable games 
      */
-    <R extends Room<? extends Game>> List<R> getGamingRooms(Customer customer, GameType gameType);
+    List<Room> findRooms(Customer customer, GameType gameType);
 
     /**
      * Sign out of the Casino.  No API calls can be made after this call completes.

@@ -9,15 +9,13 @@ import com.sparcs.casino.Customer;
  * The specification for a gaming room within the {@link Casino}.
  * 
  * @author Lee Newfeld
- *
- * @param <G> The {@link Game} subclass that the room hosts
  */
-public interface Room<G extends Game> {
+public interface Room {
 
 	/**
 	 * @return The {@link Game} inside the room.
 	 */
-	G getGame();
+	Game getGame();
 	
 	/**
 	 * @return The {@link Customer}s inside the Room who aren't playing

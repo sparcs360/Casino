@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +21,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.sparcs.casino.BaseTest;
 import com.sparcs.casino.Casino;
 import com.sparcs.casino.Customer;
-import com.sparcs.casino.game.Game;
 import com.sparcs.casino.game.GameType;
 import com.sparcs.casino.game.Room;
 
@@ -44,24 +42,18 @@ public class VisitToTheCasinoTest extends BaseTest {
     @Mock
     private Casino casino;
     
-    private List<Room<? extends Game>> rouletteRooms;
-    
     @Autowired
-    private RouletteRoom room1;
+    private RouletteHall rouletteHall;
 
-    @Before
+	@Before
     public void beforeTest() {
 
-        // Setup games and rooms
-        rouletteRooms = new ArrayList<>();
-        rouletteRooms.add(room1);
-        
         // Mocks for functionality in other Domains
         lee = Mockito.mock(Customer.class);
 
         casino = Mockito.mock(Casino.class);
         when(casino.signIn(eq("Lee"), anyString())).thenReturn(lee);
-        when(casino.getGamingRooms(any(Customer.class), eq(GameType.ROULETTE))).thenReturn(rouletteRooms);
+        when(casino.findRooms(any(Customer.class), eq(GameType.ROULETTE))).thenReturn(rouletteHall.getRooms());
     }
 
 	@Test
@@ -75,21 +67,21 @@ public class VisitToTheCasinoTest extends BaseTest {
         
         //####################################################################//
         // He wants to play Roulette, where's the action?
-        List<Room<Roulette>> rooms = casino.getGamingRooms(customer, GameType.ROULETTE);
+        List<Room> rooms = casino.findRooms(customer, GameType.ROULETTE);
         
         assertNotNull("Should find some Rooms", rooms);
-        assertEquals("Should be one room", 1, rooms.size());
+        assertTrue("Should be more than one room", rooms.size() > 0);
 
         //####################################################################//
         // Find an empty room...
-        Optional<Room<Roulette>> firstEmptyRoom =
+        Optional<Room> firstEmptyRoom =
         		rooms.stream()
         			 .filter(r -> r.isEmpty())
         			 .findFirst();
         
         assertTrue("Should find an empty room", firstEmptyRoom.isPresent());
         
-        Room<Roulette> room = firstEmptyRoom.get();
+        RouletteRoom room = (RouletteRoom)firstEmptyRoom.get();
         
         assertEquals("Should be no spectators", 0, room.getSpectators().size());
         assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
@@ -104,7 +96,7 @@ public class VisitToTheCasinoTest extends BaseTest {
 
         //####################################################################//
         // It should be a Roulette gaming room
-        Roulette game = room.getGame();
+        Roulette game = (Roulette)room.getGame();
 
         assertNotNull("Room should contain a game", game);
         assertFalse("Games in empty rooms shouldn't be running", game.isRunning());
