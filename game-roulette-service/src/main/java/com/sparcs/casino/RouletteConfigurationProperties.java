@@ -1,4 +1,4 @@
-package com.sparcs.casino.roulette;
+package com.sparcs.casino;
 
 import javax.annotation.PostConstruct;
 
@@ -14,9 +14,9 @@ import com.sparcs.casino.RouletteServiceApplication;
  * @author Lee Newfeld
  */
 @ConfigurationProperties(prefix="roulette")
-public class Config {
+public class RouletteConfigurationProperties {
 
-	private static final Logger log = LoggerFactory.getLogger(Config.class);
+	private static final Logger log = LoggerFactory.getLogger(RouletteConfigurationProperties.class);
 
 	private int gameCount = 1;
 
