@@ -2,8 +2,6 @@ package com.sparcs.casino;
 
 import java.util.List;
 
-import com.sparcs.casino.Customer;
-import com.sparcs.casino.game.Game;
 import com.sparcs.casino.game.GameType;
 import com.sparcs.casino.game.Room;
 

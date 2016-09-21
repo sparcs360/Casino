@@ -9,17 +9,11 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.sparcs.casino.BaseTest;
-import com.sparcs.casino.Casino;
 import com.sparcs.casino.Customer;
 import com.sparcs.casino.game.GameType;
 import com.sparcs.casino.game.Room;
@@ -29,30 +23,20 @@ import com.sparcs.casino.game.Room;
  *   
  * @author Lee Newfeld
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class VisitToTheCasinoTest extends BaseTest {
 
 	@SuppressWarnings("unused")
 	private static final Logger log = LoggerFactory.getLogger(VisitToTheCasinoTest.class);
 
-    @Mock
-    private Customer lee;
-
-    @Mock
-    private Casino casino;
-    
     @Autowired
-    private RouletteHall rouletteHall;
+    protected RouletteHall rouletteHall;
 
 	@Before
     public void beforeTest() {
 
-        // Mocks for functionality in other Domains
-        lee = Mockito.mock(Customer.class);
-
-        casino = Mockito.mock(Casino.class);
-        when(casino.signIn(eq("Lee"), anyString())).thenReturn(lee);
+		super.beforeTest();
+		
+        // Add mock functionality
         when(casino.findRooms(any(Customer.class), eq(GameType.ROULETTE))).thenReturn(rouletteHall.getRooms());
     }
 

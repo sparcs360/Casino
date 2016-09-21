@@ -15,7 +15,7 @@ import com.sparcs.casino.roulette.RouletteHall;
 import com.sparcs.casino.roulette.RouletteRoom;
 
 /**
- * A Hall of {@link RouletteRoom rooms} hosting {@link Roulette} games. 
+ * A Hall of {@link RouletteRoom rooms} hosting {@link Roulette} games.
  * 
  * @author Lee Newfeld
  */
@@ -32,12 +32,16 @@ public class RouletteHallImpl extends HallImpl implements RouletteHall {
 	 */
 	@PostConstruct
 	private void initialise() {
-		
+
 		log.debug("Constructing {} Room(s)", config.getGameCount());
 
-		for( int i=0; i<config.getGameCount(); i++ ) {
-			
-			this.getRooms().add((Room)applicationContext.getBean("Room"));
+		for (int i = 0; i < config.getGameCount(); i++) {
+
+			log.trace("Creating Room #{}", i);
+			Room room = (Room) applicationContext.getBean("Room");
+			log.trace("Created Room #{}", i);
+
+			this.getRooms().add(room);
 		}
 	}
 }
