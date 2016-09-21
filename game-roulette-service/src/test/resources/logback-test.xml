@@ -9,7 +9,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.sparcs.casino" level="DEBUG" additivity="false">
+	<logger name="com.sparcs.casino" level="TRACE" additivity="false">
 		<appender-ref ref="STDOUT" />
 	</logger>
 

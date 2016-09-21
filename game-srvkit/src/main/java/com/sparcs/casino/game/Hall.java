@@ -3,7 +3,7 @@ package com.sparcs.casino.game;
 import java.util.List;
 
 /**
- * Represents a Hall of {@link Room}s hosting {@link Game}s.
+ * Represents a Hall of {@link Room}s hosting a particular type of Game.
  *  
  * @author Lee Newfeld
  */

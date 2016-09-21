@@ -6,5 +6,6 @@ package com.sparcs.casino;
  * @author Lee Newfeld
  */
 public interface Customer {
-
+	
+	String getNickName();
 }
