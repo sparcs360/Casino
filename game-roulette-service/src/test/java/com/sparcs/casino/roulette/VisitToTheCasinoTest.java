@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.sparcs.casino.BaseTest;
 import com.sparcs.casino.Customer;
 import com.sparcs.casino.game.GameType;
+import com.sparcs.casino.game.Player;
 import com.sparcs.casino.game.Room;
+import com.sparcs.casino.game.Spectator;
 
 /**
  * A vehicle for prototyping the Roulette API!
@@ -43,20 +45,17 @@ public class VisitToTheCasinoTest extends BaseTest {
 	@Test
 	public void shouldHaveAnEnjoyableTime() {
 
-        //####################################################################//
         // Lee enters the Casino
         Customer customer = casino.signIn("Lee", "abc");
         
         assertEquals("Should be Lee", lee, customer);
         
-        //####################################################################//
         // He wants to play Roulette, where's the action?
         List<Room> rooms = casino.findRooms(customer, GameType.ROULETTE);
         
         assertNotNull("Should find some Rooms", rooms);
         assertTrue("Should be more than one room", rooms.size() > 0);
 
-        //####################################################################//
         // Find an empty room...
         Optional<Room> firstEmptyRoom =
         		rooms.stream()
@@ -66,56 +65,28 @@ public class VisitToTheCasinoTest extends BaseTest {
         assertTrue("Should find an empty room", firstEmptyRoom.isPresent());
         
         RouletteRoom room = (RouletteRoom)firstEmptyRoom.get();
-        
-        assertEquals("Should be no spectators", 0, room.getSpectators().size());
-        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
 
-        //####################################################################//
         // Go inside...
-        room.enter(lee);
+        Spectator spectator = room.enter(lee);
         
-        assertEquals("Should be one spectators", 1, room.getSpectators().size());
-        assertTrue("Lee should be a spectator", room.getSpectators().contains(lee));
-        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
+        // Meet the Croupier...
+        @SuppressWarnings("unused")
+		RouletteCroupier croupier = (RouletteCroupier)room.getGameManager();
 
-        //####################################################################//
-        // It should be a Roulette gaming room
-        Roulette game = (Roulette)room.getGame();
-
-        assertNotNull("Room should contain a game", game);
-        assertFalse("Games in empty rooms shouldn't be running", game.isRunning());
-
-        //####################################################################//
         // Take a chair
-        room.join(customer);
+        Player player = room.joinGame(spectator);
         
-        assertEquals("Should be one player", 1, room.getGame().getPlayers().size());
-        assertTrue("Lee should be a player", game.getPlayers().contains(lee));
-        assertEquals("Should be no spectators", 0, room.getSpectators().size());
-
-        //####################################################################//
         // Run a cycle of all game loops
-
         while( rouletteHall.executeGameLoops() ) {
         	
         }
 
-        //####################################################################//
         // Stand up
-        room.leave(customer);
+        spectator = room.leaveGame(player);
 
-        assertEquals("Should be one spectator", 1, room.getSpectators().size());
-        assertTrue("Lee should be a spectator", room.getSpectators().contains(lee));
-        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
-
-        //####################################################################//
         // Leave the room
-        room.exit(lee);
-        
-        assertEquals("Should be no spectators", 0, room.getSpectators().size());
-        assertEquals("Should be no players", 0, room.getGame().getPlayers().size());
+        room.exit(spectator);
 
-        //####################################################################//
         // Go home
         casino.signOut(customer);
 	}

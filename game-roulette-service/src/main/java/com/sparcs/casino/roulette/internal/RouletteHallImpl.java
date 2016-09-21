@@ -10,12 +10,11 @@ import org.springframework.stereotype.Component;
 import com.sparcs.casino.RouletteConfigurationProperties;
 import com.sparcs.casino.game.HallImpl;
 import com.sparcs.casino.game.Room;
-import com.sparcs.casino.roulette.Roulette;
 import com.sparcs.casino.roulette.RouletteHall;
 import com.sparcs.casino.roulette.RouletteRoom;
 
 /**
- * A Hall of {@link RouletteRoom rooms} hosting {@link Roulette} games.
+ * A Hall of {@link RouletteRoom rooms} hosting Roulette games.
  * 
  * @author Lee Newfeld
  */
@@ -33,6 +32,7 @@ public class RouletteHallImpl extends HallImpl implements RouletteHall {
 	@PostConstruct
 	private void initialise() {
 
+		// TODO: Move this into HallImpl?  How to handle general/specific configuration?
 		log.debug("Constructing {} Room(s)", config.getGameCount());
 
 		for (int i = 0; i < config.getGameCount(); i++) {

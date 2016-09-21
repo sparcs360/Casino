@@ -9,11 +9,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import com.sparcs.casino.Casino;
-
 /**
- * The base implementation of a {@link Hall} of {@link Game}
- * {@link Room}s within the {@link Casino}.
+ * The base implementation of a {@link Hall}
  * 
  * @author Lee Newfeld
  */

@@ -7,20 +7,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.sparcs.casino.game.Room;
-import com.sparcs.casino.game.RoomImpl;
-import com.sparcs.casino.roulette.RouletteRoom;
+import com.sparcs.casino.game.GameState;
 
 /**
- * A {@link Room} hosting a game of Roulette.
+ * The current state of a game of Roulette.
  * 
  * @author Lee Newfeld
  */
-@Component("Room")
+@Component
 @Scope("prototype")
-public class RouletteRoomImpl extends RoomImpl implements RouletteRoom {
+public class RouletteGameState extends GameState {
 
-	private static final Logger log = LoggerFactory.getLogger(RouletteRoomImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(RouletteGameState.class);
 
 	@PostConstruct
 	private void initialise() {

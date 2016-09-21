@@ -6,26 +6,29 @@ import com.sparcs.casino.Casino;
 import com.sparcs.casino.Customer;
 
 /**
- * The specification for a gaming room within the {@link Casino}.
- * 
+ * Represents a gaming room within the {@link Casino}.<br>
+ * <p>It hosts:<br>
+ * <li>A {@link #getGameManager() Game Manager} that controls the {@link GameState}</li>
+ * <li>A list of {@link #getSpectators() Spectators}</li>
+ * </p>
  * @author Lee Newfeld
  */
 public interface Room {
 
 	/**
-	 * @return The {@link Game} inside the room.
+	 * @return The {@link GameManager manager} of the {@link GameState} inside the room.
 	 */
-	Game getGame();
+	GameManager getGameManager();
 	
 	/**
-	 * @return The {@link Customer}s inside the Room who aren't playing
-	 * the {@link Game}
+	 * @return The {@link Spectator}s inside the Room (i.e., watching the {@link GameState}
+	 * rather than {@link Player playing}).
 	 */
-	List<Customer> getSpectators();
+	List<Spectator> getSpectators();
 	
 	/**
 	 * @return True if there are no {@link #getSpectators() spectators} or
-	 * {@link Game#getPlayers() players} in the room.
+	 * {@link GameState#getPlayers() players} in the room.
 	 */
 	boolean isEmpty();
 
@@ -33,30 +36,33 @@ public interface Room {
 	 * Enter the room and become a {@link #getSpectators() Spectator}.
 	 * 
 	 * @param customer
+	 * @return The {@link Spectator role} wrapping the {@link Customer}
 	 */
-    void enter(Customer customer);
-
-
-    /**
-     * Take a seat at the table and get ready to play
-     * 
-     * @param player
-     */
-    void join(Customer player);
+    Spectator enter(Customer customer);
 
     /**
-     * Stop playing the game and become a Spectator.
+     * Take a seat at the table, become a {@link Player}, and get ready
+     * to play!
+     * 
+     * @param spectator
+	 * @return The {@link Player role} wrapping the {@link Customer}
+     */
+    Player joinGame(Spectator spectator);
+
+    /**
+     * Stop playing the game (become a {@link Spectator} again).
      * 
      * @param player
+	 * @return The {@link Spectator role} wrapping the {@link Customer}
      */
-    void leave(Customer player);
+    Spectator leaveGame(Player player);
     
     /**
      * Exit the room
      * 
-     * @param customer
+     * @param spectator
      */
-    void exit(Customer customer);
+    void exit(Spectator spectator);
 
     /**
      * Execute a single cycle of the game loop.
