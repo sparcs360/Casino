@@ -30,12 +30,23 @@ public class RouletteWheelTest extends BaseTest {
     }
 
 	@Test
-	public void todo() {
+	public void wheelShouldBeAtRestWhenConstructed() {
 
-		log.trace("+todo");
+		log.trace("+wheelShouldBeAtRestWhenConstructed");
 		
-		fail("Implement me!");
+		assertEquals(RouletteWheel.State.AT_REST, wheel.getState());
 
-		log.trace("-todo");
+		log.trace("-wheelShouldBeAtRestWhenConstructed");
+	}
+	
+	@Test
+	public void wheelShouldBeAtRestAfterReset() {
+
+		log.trace("+wheelShouldBeAtRestAfterReset");
+		
+		wheel.reset();
+		assertEquals(RouletteWheel.State.AT_REST, wheel.getState());
+
+		log.trace("-wheelShouldBeAtRestAfterReset");
 	}
 }
