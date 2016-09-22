@@ -15,10 +15,20 @@ public interface RouletteWheel {
 	static enum State {
 		
 		/**
-		 * The Wheel isn't spinning, the ball is in the Croupier's hand.
+		 * The Wheel is at rest, the ball is in the Croupier's hand.
+		 * 
+		 * <li>Wheel can be {@link RouletteWheel#reset() reset}</li>
+		 * <li>Wheel can be {@link RouletteWheel#start() started}</li>
 		 */
 		AT_REST,
-
+		
+		/**
+		 * The Wheel is spinning, the ball is in the Croupier's hand.
+		 * 
+		 * <li>Wheel can be {@link RouletteWheel#reset() reset}</li>
+		 * <li>Wheel <b>cannot</b> be {@link RouletteWheel#start() started}</li>
+		 */
+		SPINNING,
 	}
 	
 	/**
@@ -30,4 +40,12 @@ public interface RouletteWheel {
 	 * @return The {@link State} of the Wheel.
 	 */
 	State getState();
+
+	/**
+	 * Start the Wheel spinning.
+	 * 
+	 * @throws RouletteException If the wheel's {@link #getState() state}
+	 * isn't {@link State#AT_REST}
+	 */
+	void start();
 }

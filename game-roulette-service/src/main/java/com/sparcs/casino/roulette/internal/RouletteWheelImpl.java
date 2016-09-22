@@ -5,6 +5,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.sparcs.casino.roulette.RouletteException;
 import com.sparcs.casino.roulette.RouletteWheel;
 
 /**
@@ -34,5 +35,15 @@ public class RouletteWheelImpl implements RouletteWheel {
 	public State getState() {
 
 		return state;
+	}
+
+	@Override
+	public void start() {
+
+		if( state != State.AT_REST ) {
+			throw new RouletteException("Wheel must be at rest");
+		}
+		
+		state = State.SPINNING;
 	}
 }
