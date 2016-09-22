@@ -1,5 +1,6 @@
 package com.sparcs.casino.roulette;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -69,8 +70,9 @@ public class VisitToTheCasinoTest extends BaseTest {
         Player player = room.joinGame(spectator);
         
         // Run a cycle of all game loops
-        while( hall.executeGameLoops() ) {
+        for( int i=0; i<50; i++ ) {
         	
+        	assertTrue(hall.executeGameLoops());
         }
 
         // Stand up
