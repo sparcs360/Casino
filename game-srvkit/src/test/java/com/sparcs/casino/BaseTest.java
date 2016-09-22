@@ -1,7 +1,12 @@
 package com.sparcs.casino;
 
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -72,10 +77,22 @@ http://docs.spring.io/spring/docs/current/spring-framework-reference/html/integr
 })
 public abstract class BaseTest /*extends AbstractTransactionalJUnit4SpringContextTests*/ {
 
+	@Mock
+	protected Casino casino;
+
+	@Mock
+	protected Customer lee;
+
     @Before
     public void beforeTest() {
     	
         MockitoAnnotations.initMocks(this);
         
+        // Create mocks for other Domain entities
+        casino = Mockito.mock(Casino.class);
+        lee = Mockito.mock(Customer.class);
+
+        // Add mock functionality
+        when(casino.signIn(eq("Lee"), anyString())).thenReturn(lee);
     }
 }
