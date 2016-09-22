@@ -3,7 +3,8 @@ package com.sparcs.casino.game;
 import java.io.Serializable;
 
 /**
- * 
+ * Base implementation of a Game Exception.
+ *   
  * @author Lee Newfeld
  */
 public class GameException extends RuntimeException implements Serializable {
