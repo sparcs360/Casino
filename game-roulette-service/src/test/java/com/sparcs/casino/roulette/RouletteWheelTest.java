@@ -96,4 +96,38 @@ public class RouletteWheelTest extends BaseTest {
 
 		log.trace("-shouldBeResetableWhileSpinning");
 	}
+
+	@Test
+	public void shouldFollowLifecycleAfterStart() {
+
+		log.trace("+shouldFollowLifecycleAfterStart");
+
+		RouletteWheel.State state;
+
+		// wheel is initially AT_REST
+		
+		wheel.start(); // SPINNING
+
+		state = wheel.update();	// BALL_SPINNING
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.BALL_SPINNING, state);
+
+		state = wheel.update();	// NO_MORE_BETS
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.NO_MORE_BETS, state);
+
+		state = wheel.update();	// BALL_AT_REST
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.BALL_AT_REST, state);
+
+		state = wheel.update();	// AT_REST
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.AT_REST, state);
+
+		state = wheel.update();	// AT_REST (forever... until started again)
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.AT_REST, state);
+
+		log.trace("-shouldFollowLifecycleAfterStart");
+	}
 }
