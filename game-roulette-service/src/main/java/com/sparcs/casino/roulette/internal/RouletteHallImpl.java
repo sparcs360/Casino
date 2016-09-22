@@ -14,7 +14,7 @@ import com.sparcs.casino.roulette.RouletteHall;
 import com.sparcs.casino.roulette.RouletteRoom;
 
 /**
- * A Hall of {@link RouletteRoom rooms} hosting Roulette games.
+ * A Hall of {@link RouletteRoom rooms}, each hosting a game of Roulette.
  * 
  * @author Lee Newfeld
  */

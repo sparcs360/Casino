@@ -1,5 +1,6 @@
-package com.sparcs.casino.roulette;
+package com.sparcs.casino.game;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
@@ -18,9 +19,12 @@ import com.sparcs.casino.game.GameType;
 import com.sparcs.casino.game.Player;
 import com.sparcs.casino.game.Room;
 import com.sparcs.casino.game.Spectator;
+import com.sparcs.casino.testgame.SnoozeGameManager;
+import com.sparcs.casino.testgame.SnoozeHall;
+import com.sparcs.casino.testgame.SnoozeRoom;
 
 /**
- * A vehicle for prototyping the Roulette API!
+ * A vehicle for prototyping the Game API
  *   
  * @author Lee Newfeld
  */
@@ -30,7 +34,7 @@ public class VisitToTheCasinoTest extends BaseTest {
 	private static final Logger log = LoggerFactory.getLogger(VisitToTheCasinoTest.class);
 
     @Autowired
-    protected RouletteHall hall;
+    protected SnoozeHall hall;
 
 	@Before
     public void beforeTest() {
@@ -47,23 +51,30 @@ public class VisitToTheCasinoTest extends BaseTest {
         // Lee enters the Casino
         Customer customer = casino.signIn("Lee", "abc");
         
+        assertEquals("Should be Lee", lee, customer);
+        
         // He wants to play Roulette, where's the action?
         List<Room> rooms = casino.findRooms(customer, GameType.ROULETTE);
         
+        assertNotNull("Should find some Rooms", rooms);
+        assertTrue("Should be more than one room", rooms.size() > 0);
+
         // Find an empty room...
         Optional<Room> firstEmptyRoom =
         		rooms.stream()
         			 .filter(r -> r.isEmpty())
         			 .findFirst();
         
-        RouletteRoom room = (RouletteRoom)firstEmptyRoom.get();
+        assertTrue("Should find an empty room", firstEmptyRoom.isPresent());
+        
+        SnoozeRoom room = (SnoozeRoom)firstEmptyRoom.get();
 
         // Go inside...
         Spectator spectator = room.enter(lee);
         
         // Meet the Croupier...
         @SuppressWarnings("unused")
-		RouletteCroupier croupier = (RouletteCroupier)room.getGameManager();
+		SnoozeGameManager croupier = (SnoozeGameManager)room.getGameManager();
 
         // Take a chair
         Player player = room.joinGame(spectator);
