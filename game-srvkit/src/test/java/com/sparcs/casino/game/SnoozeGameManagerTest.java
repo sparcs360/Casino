@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -65,5 +67,19 @@ public class SnoozeGameManagerTest extends BaseTest {
 		assertEquals(GameState.UNDEFINED_TIME, gameManager.getGameState().getGameTime());
 
 		log.trace("-gameIsntInitiallyRunning");
+	}
+
+	@Rule public ExpectedException gameCantBeUpdatedWhenNotRunningException = ExpectedException.none(); 
+	@Test
+	public void gameCantBeUpdatedWhenNotRunning() {
+
+		log.trace("+gameCantBeUpdatedWhenNotRunning");
+
+		gameCantBeUpdatedWhenNotRunningException.expect(GameException.class);
+		gameCantBeUpdatedWhenNotRunningException.expectMessage("Can't advance game time when game isn't running");
+
+		gameManager.update(room);
+
+		log.trace("-gameCantBeUpdatedWhenNotRunning");
 	}
 }

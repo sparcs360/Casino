@@ -42,24 +42,12 @@ public class RouletteWheelImpl implements RouletteWheel {
 	}
 
 	@Override
-	public void start() {
-
-		log.trace("start {}", this);
-
-		if( state != State.AT_REST ) {
-			throw new RouletteException("Wheel must be at rest");
-		}
-		
-		setState(State.SPINNING);
-	}
-
-	@Override
 	public State update() {
 
 		log.trace("update {}", this);
 
 		switch(state) {
-			case AT_REST: setState(State.AT_REST); break;
+			case AT_REST: setState(State.SPINNING); break;
 			case SPINNING: setState(State.BALL_SPINNING); break;
 			case BALL_SPINNING: setState(State.NO_MORE_BETS); break;
 			case NO_MORE_BETS: {
