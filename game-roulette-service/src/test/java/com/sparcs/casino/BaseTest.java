@@ -94,5 +94,6 @@ public abstract class BaseTest /*extends AbstractTransactionalJUnit4SpringContex
 
         // Add mock functionality
         when(casino.signIn(eq("Lee"), anyString())).thenReturn(lee);
+        when(lee.getNickName()).thenReturn("SPARCS");
     }
 }
