@@ -6,14 +6,14 @@
 
 ## Branches
 
-| Name | Purpose | Push to Branch |
-|-|-|-|
-| **master** | Public releases of Casino | &lt;none> |
-| **develop** | Development for the next release  | master |
-| **framework** | Development of the common game framework | develop |
-| *framework_feature* | Development of a feature of the common game framework | framework |
-| **roulette** | Development of the Roulette game | develop |
-| *roulette_feature* | Development of a feature of the Roulette game | roulette |
+| Name                | Purpose                                               | Push to Branch |
+|---------------------|-------------------------------------------------------|----------------|
+| **master**          | Public releases of Casino                             | &lt;none>      |
+| **develop**         | Development for the next release                      | master         |
+| **framework**       | Development of the common game framework              | develop        |
+| *framework_feature* | Development of a feature of the common game framework | framework      |
+| **roulette**        | Development of the Roulette game                      | develop        |
+| *roulette_feature*  | Development of a feature of the Roulette game         | roulette       |
 
 - - -
 
@@ -112,12 +112,18 @@ Deleted branch roulette_feature (was 05e9557).
 
 ### Use the latest game framework in your game
 
-Do this when an update of the game framework has been pushed to **develop**.
+Do this after an update of the game framework has been pushed to **develop**.
 
 ```bash
 # TODO
 $ git rebase develop roulette
-```
+First, rewinding head to replay your work on top of it...
+Applying: Initial setup for Wheel
+Applying: Add initial state
+Applying: Make Wheel startable/stoppable
+Applying: Implement Wheel lifecycle
+Applying: Implement ability to get result of the spin
+```	
 
 Release any merge conflicts.
 

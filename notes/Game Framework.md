@@ -2,18 +2,17 @@
 
 ## Interfaces
 
-| Name | Description |
-|-|-|
-| **Casino** | A venue where **Customer**s go to play games! |
-| **Customer** | A patron of the **Casino** |
-| **CustomerRole** | A function performed by a **Customer** in a particular situation |
-| **Spectator** (a *CustomerRole*) | A **Customer** watching a Game |
-| **Player** (a *CustomerRole*) | A **Customer** playing a Game |
-| **Hall** | Represents a set of **Room**s hosting a particular type of Game |
-| **Room** | Represents a Room within a **Hall** of the **Casino**.  It hosts: a **GameManager** and a set of **Customer**s (playing a **Spectator** or **Player** role) |
-| **GameManager** | The referee of a Game |
-| **GameState** | The current state of a Game |
-
+| Name                             | Description                                                      |
+|----------------------------------|------------------------------------------------------------------|
+| **Casino**                       | A venue where **Customer**s go to play games!                    |
+| **Customer**                     | A patron of the **Casino**                                       |
+| **CustomerRole**                 | A function performed by a **Customer** in a particular situation |
+| **Spectator** (a *CustomerRole*) | A **Customer** watching a Game                                   |
+| **Player** (a *CustomerRole*)    | A **Customer** playing a Game                                    |
+| **Hall**                         | Represents a set of **Room**s hosting a particular type of Game  |
+| **Room**                         | Represents a Room within a **Hall** of the **Casino**.  It hosts: a **GameManager** and a set of **Customer**s (playing a **Spectator** or **Player** role) |
+| **GameManager**                  | The referee of a Game                                            |
+| **GameState**                    | The current state of a Game                                      |
 
 ## Class Model
 
