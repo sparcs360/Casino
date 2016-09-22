@@ -72,4 +72,16 @@ public abstract class GameManagerImpl implements GameManager {
 	 * @param room
 	 */
 	protected void onShutdown(Room room) {};
+	
+	/**
+	 * Send a message that everyone in the Room can hear
+	 * 
+	 * @param message
+	 * @param args
+	 */
+	protected void shout(String message, Object... args) {
+
+		// TODO: Need events :|
+		log.info("[ROOM] " + message, (Object[])args);
+	}
 }

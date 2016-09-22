@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sparcs.casino.BaseTest;
 import com.sparcs.casino.game.Spectator;
+import com.sparcs.casino.roulette.internal.RouletteCroupierImpl;
 
 /**
  * Tests of RouletteCroupier behaviour
@@ -29,11 +30,14 @@ public class RouletteCroupierTest extends BaseTest {
 
 	@Mock
 	RouletteRoom room;
+	
+	@Mock
+	Spectator spectator;
 
 	List<Spectator> spectators;
 	
 	@Autowired
-	private RouletteCroupier croupier;
+	private RouletteCroupierImpl croupier;
 
 	@Before
 	public void beforeTest() {
@@ -44,20 +48,34 @@ public class RouletteCroupierTest extends BaseTest {
 
         // Create mocks
         room = Mockito.mock(RouletteRoom.class);
+        spectator = Mockito.mock(Spectator.class);
         
         // Add mock functionality
         when(room.getGameManager()).thenReturn(croupier);
         when(room.getSpectators()).thenReturn(spectators);
+        when(spectator.toString()).thenReturn("Lee");
+        when(spectator.getCustomer()).thenReturn(lee);
 
 		log.trace("Feature under test: {}", croupier);
 	}
 	
 	@Test
-	public void todo() {
+	public void gameShouldRunWhenSpectatorEntersRoom() {
 
 		log.trace("+todo");
+
+		// Fired when someone walks into the empty room
+		spectators.add(spectator);
+		croupier.initialise(room);
 		
-		assertTrue(true);
+		// Spectator stays for a while...
+		for( int i=0; i<50; i++ ) {
+			
+			assertTrue("Game should never end", croupier.update(room) );
+		}
+
+		// Spectator leaves
+		croupier.shutdown(room);
 
 		log.trace("-todo");
 	}

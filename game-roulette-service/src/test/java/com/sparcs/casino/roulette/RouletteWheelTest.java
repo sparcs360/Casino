@@ -3,9 +3,7 @@ package com.sparcs.casino.roulette;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,45 +54,13 @@ public class RouletteWheelTest extends BaseTest {
 	}
 
 	@Test
-	public void shouldStartSpinningWhenStarted() {
-
-		log.trace("+shouldStartSpinningWhenStarted");
-		
-		wheel.start();
-		assertEquals(RouletteWheel.State.SPINNING, wheel.getState());
-		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
-
-		log.trace("-shouldStartSpinningWhenStarted");
-	}
-
-	@Rule public ExpectedException wheelCanOnlyBeStartedWhenAtRest =
-			ExpectedException.none();
-	@Test
-	public void shouldntStartWhenNotAtRest() {
-
-		log.trace("+shouldntStartWhenNotAtRest");
-
-		wheel.start();
-		
-		wheelCanOnlyBeStartedWhenAtRest.expect(RouletteException.class);
-		/* TODO: A way of distinguishing one Exception from another
-		 * (subclass?  discriminator field?) 
-		 */
-		//wheelCanOnlyBeStartedWhenAtRest.expectMessage("...");
-
-		wheel.start();
-
-		log.trace("-shouldntStartWhenNotAtRest");
-	}
-
-	@Test
 	public void shouldBeResetableWhileSpinning() {
 
 		log.trace("+shouldBeResetableWhileSpinning");
 		
-		wheel.start();
+		wheel.update();
 		wheel.reset();
-		wheel.start();
+		wheel.update();
 		assertEquals(RouletteWheel.State.SPINNING, wheel.getState());
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
@@ -110,7 +76,10 @@ public class RouletteWheelTest extends BaseTest {
 
 		// wheel is initially AT_REST
 		
-		wheel.start(); // SPINNING
+		state = wheel.update();	// SPINNING
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.SPINNING, state);
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		state = wheel.update();	// BALL_SPINNING
 		assertSame("Returned State should be the current state", wheel.getState(), state);
@@ -132,12 +101,8 @@ public class RouletteWheelTest extends BaseTest {
 		assertEquals(RouletteWheel.State.BETS_RESOLVED, state);
 		assertNotEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
+		// Back to AT_REST
 		state = wheel.update();	// AT_REST
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.AT_REST, state);
-		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
-
-		state = wheel.update();	// AT_REST (forever... until started again)
 		assertSame("Returned State should be the current state", wheel.getState(), state);
 		assertEquals(RouletteWheel.State.AT_REST, state);
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());

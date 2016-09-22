@@ -70,14 +70,6 @@ public interface RouletteWheel {
 	void reset();
 
 	/**
-	 * Start the Wheel spinning.
-	 * 
-	 * @throws RouletteException If the wheel's {@link #getState() state}
-	 * isn't {@link State#AT_REST}
-	 */
-	void start();
-
-	/**
 	 * <p>Move the wheel to the next stage in its lifecylce.</p>
 	 * <p>
 	 * <table border='1'>
@@ -87,10 +79,10 @@ public interface RouletteWheel {
 	 *  </tr>
 	 * 	<tr>
 	 *   <td>{@link State#AT_REST}</td>
-	 *   <td>{@link State#AT_REST}</td>
+	 *   <td>{@link State#SPINNING}</td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#SPINNING} (via {@link #start()})</td>
+	 *   <td>{@link State#SPINNING}</td>
 	 *   <td>{@link State#BALL_SPINNING}</td>
 	 *  </tr>
 	 * 	<tr>
