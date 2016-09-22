@@ -22,6 +22,7 @@ public class RouletteWheelImpl implements RouletteWheel {
 	private static final Logger log = LoggerFactory.getLogger(RouletteWheelImpl.class);
 
 	private State state;
+	private int result;
 
 	@PostConstruct
 	private void initialise() {
@@ -37,6 +38,7 @@ public class RouletteWheelImpl implements RouletteWheel {
 		log.trace("reset {}", this);
 
 		setState(State.AT_REST);
+		setResult(RouletteWheel.RESULT_UNDEFINED);
 	}
 
 	@Override
@@ -60,8 +62,14 @@ public class RouletteWheelImpl implements RouletteWheel {
 			case AT_REST: setState(State.AT_REST); break;
 			case SPINNING: setState(State.BALL_SPINNING); break;
 			case BALL_SPINNING: setState(State.NO_MORE_BETS); break;
-			case NO_MORE_BETS: setState(State.BALL_AT_REST); break;
-			case BALL_AT_REST: setState(State.AT_REST); break;
+			case NO_MORE_BETS: {
+				setState(State.BALL_AT_REST);
+				// TODO: Need a richer datatype than int to hold this result!
+				setResult((int)(Math.random() * 37));
+				break;
+			}
+			case BALL_AT_REST: setState(State.BETS_RESOLVED); break;
+			case BETS_RESOLVED: reset(); break;
 			default: {
 
 				throw new RouletteException(String.format("Unexpected Wheel State - %s", state.name()));
@@ -84,8 +92,26 @@ public class RouletteWheelImpl implements RouletteWheel {
 	 */
 	protected void setState(State value) {
 		
-		log.trace("{} -> {}", state, value);
+		log.trace("state: {} -> {}", state, value);
 
 		state = value;
+	}
+
+	@Override
+	public int getResult() {
+
+		return result;
+	}
+
+	/**
+	 * Update result (with logging)
+	 * 
+	 * @param value New result
+	 */
+	private void setResult(int value) {
+
+		log.trace("result: {} -> {}", result, value);
+
+		result = value;
 	}
 }

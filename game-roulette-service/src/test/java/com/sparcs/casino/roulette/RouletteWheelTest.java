@@ -38,6 +38,7 @@ public class RouletteWheelTest extends BaseTest {
 		log.trace("+shouldBeAtRestWhenConstructed");
 		
 		assertEquals(RouletteWheel.State.AT_REST, wheel.getState());
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldBeAtRestWhenConstructed");
 	}
@@ -49,6 +50,7 @@ public class RouletteWheelTest extends BaseTest {
 		
 		wheel.reset();
 		assertEquals(RouletteWheel.State.AT_REST, wheel.getState());
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldBeAtRestAfterReset");
 	}
@@ -60,6 +62,7 @@ public class RouletteWheelTest extends BaseTest {
 		
 		wheel.start();
 		assertEquals(RouletteWheel.State.SPINNING, wheel.getState());
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldStartSpinningWhenStarted");
 	}
@@ -93,6 +96,7 @@ public class RouletteWheelTest extends BaseTest {
 		wheel.reset();
 		wheel.start();
 		assertEquals(RouletteWheel.State.SPINNING, wheel.getState());
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldBeResetableWhileSpinning");
 	}
@@ -111,22 +115,32 @@ public class RouletteWheelTest extends BaseTest {
 		state = wheel.update();	// BALL_SPINNING
 		assertSame("Returned State should be the current state", wheel.getState(), state);
 		assertEquals(RouletteWheel.State.BALL_SPINNING, state);
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		state = wheel.update();	// NO_MORE_BETS
 		assertSame("Returned State should be the current state", wheel.getState(), state);
 		assertEquals(RouletteWheel.State.NO_MORE_BETS, state);
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		state = wheel.update();	// BALL_AT_REST
 		assertSame("Returned State should be the current state", wheel.getState(), state);
 		assertEquals(RouletteWheel.State.BALL_AT_REST, state);
+		assertNotEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+
+		state = wheel.update();	// BETS_RESOLVED
+		assertSame("Returned State should be the current state", wheel.getState(), state);
+		assertEquals(RouletteWheel.State.BETS_RESOLVED, state);
+		assertNotEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		state = wheel.update();	// AT_REST
 		assertSame("Returned State should be the current state", wheel.getState(), state);
 		assertEquals(RouletteWheel.State.AT_REST, state);
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		state = wheel.update();	// AT_REST (forever... until started again)
 		assertSame("Returned State should be the current state", wheel.getState(), state);
 		assertEquals(RouletteWheel.State.AT_REST, state);
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldFollowLifecycleAfterStart");
 	}
