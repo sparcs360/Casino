@@ -1,5 +1,7 @@
 package com.sparcs.casino.roulette;
 
+import java.util.List;
+
 import com.sparcs.casino.game.GameManager;
 
 /**
@@ -47,4 +49,12 @@ public interface RouletteCroupier extends GameManager {
 	 * @return true if the bet was accepted.
 	 */
 	boolean considerBet(RoulettePlayer player, RouletteBet bet);
+
+	/**
+	 * Get the list of active bets for a {@link RoulettePlayer player}.
+	 * 
+	 * @param player The {@link RoulettePlayer player} who placed the bets.
+	 * @return The list of {@link RouletteBet bets}.
+	 */
+	List<RouletteBet> getBets(RoulettePlayer player);
 }

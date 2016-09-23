@@ -1,21 +1,27 @@
 package com.sparcs.casino.roulette;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sparcs.casino.BaseTest;
+import com.sparcs.casino.roulette.RouletteBet.SingleBet;
 import com.sparcs.casino.roulette.internal.RouletteCroupierImpl;
 import com.sparcs.casino.roulette.internal.RouletteRoomImpl;
 
 /**
- * Tests of RouletteCroupier behaviour
+ * Test {@link RouletteCroupierImpl} behaviour
+ * 
  * @author Lee Newfeld
  *
  */
@@ -25,11 +31,17 @@ public class RouletteCroupierTest extends BaseTest {
 
 	@Autowired
 	private RouletteRoomImpl room;
-	
+
+	@InjectMocks
 	private RouletteCroupierImpl croupier;
 
+	@Autowired
+	private RouletteWheel realWheel;
+	@Mock
+	private RouletteWheel riggedWheel;
+
 	private RouletteSpectator spectator;
-	
+
 	@Before
 	public void beforeTest() {
 
@@ -38,6 +50,10 @@ public class RouletteCroupierTest extends BaseTest {
 		// Spectator enters the room
 		spectator = (RouletteSpectator)room.enter(lee);
 		croupier = (RouletteCroupierImpl)room.getGameManager();
+
+		// Create a rigged wheel!
+		riggedWheel = Mockito.spy(realWheel);
+		when(riggedWheel.getResult()).thenReturn(7);
 
 		log.trace("Feature under test: {}", croupier);
 	}
@@ -80,12 +96,16 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Spectator joins game
 		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
+		assertEquals("Player should have no active bet", 0, player.getBets().size());
 
 		// Wait until we can bet
 		waitUntil( player, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertTrue("Bet should be accepted", player.requestBet(RouletteBet.singleBet(1, 7)));
+		SingleBet bet = RouletteBet.singleBet(1, 7);
+		assertTrue("Bet should be accepted", player.requestBet(bet));
+		assertEquals("Player should have 1 active bet", 1, player.getBets().size());
+		assertTrue("The only bet should be the one just placed", player.getBets().contains(bet));
 
 		log.trace("-betAcceptedFromPlayerWhenBettingAllowed");
 	}
@@ -104,15 +124,18 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( currentPlayer, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertFalse("Bet should be rejected", originalPlayer.requestBet(RouletteBet.singleBet(1, 7)));
+		SingleBet bet = RouletteBet.singleBet(1, 7);
+		assertFalse("Bet should be rejected", originalPlayer.requestBet(bet));
+		assertEquals("Original Player should have no active bet", 0, originalPlayer.getBets().size());
+		assertEquals("Current Player should have no active bet", 0, currentPlayer.getBets().size());
 
 		log.trace("-betRejectedFromNonPlayer");
 	}
 
 	@Test
-	public void betRejectedFromPlayerWhenNotBettingAllowed() {
+	public void betRejectedFromPlayerWhenBettingNotAllowed() {
 
-		log.trace("+betRejectedFromPlayerWhenNotBettingAllowed");
+		log.trace("+betRejectedFromPlayerWhenBettingNotAllowed");
 
 		// Spectator joins game
 		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
@@ -122,8 +145,9 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1 chip on lucky 7!
 		assertFalse("Bet should be rejected", player.requestBet(RouletteBet.singleBet(1, 7)));
+		assertEquals("Player should have no active bet", 0, player.getBets().size());
 
-		log.trace("-betRejectedFromPlayerWhenNotBettingAllowed");
+		log.trace("-betRejectedFromPlayerWhenBettingNotAllowed");
 	}
 
 	@Test
@@ -138,7 +162,8 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertTrue("Bet should be accepted", player.requestBet(RouletteBet.singleBet(1, 7)));
+		SingleBet bet = RouletteBet.singleBet(1, 7);
+		assertTrue("Bet should be accepted", player.requestBet(bet));
 
 		// Wait until Croupier resolves bets
 		waitUntil( player, p -> p.areBetsResolved() );

@@ -1,9 +1,10 @@
 package com.sparcs.casino.roulette.internal;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -38,15 +39,26 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	private static final int WHEEL_BETS_RESOLVED_DURATION = 5;
 
 	private static final Logger log = LoggerFactory.getLogger(RouletteCroupierImpl.class);
-	
+	private static final List<RouletteBet> NO_BETS = Collections.unmodifiableList(new ArrayList<>());
+
 	private Stage stage;
 	
-	@Autowired
 	private RouletteWheel wheel;
 	
-	private Map<RoulettePlayer, Set<RouletteBet>> currentBets;
+	private Map<RoulettePlayer, List<RouletteBet>> currentBets;
 
 	private long nextWheelEventTime;
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param wheel The installed Wheel 
+	 */
+	@Autowired
+	public RouletteCroupierImpl(RouletteWheel wheel) {
+
+		this.wheel = wheel;
+	}
 	
 	@PostConstruct
 	private void initialise() {
@@ -166,10 +178,10 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		}
 
 		// We're accepting this bet, add it to the list of bets
-		Set<RouletteBet> playerBets = currentBets.get(player);
+		List<RouletteBet> playerBets = currentBets.get(player);
 		if( playerBets == null ) {
 			log.trace("{}: This is the first bet for {}", this, player);
-			playerBets = new HashSet<>();
+			playerBets = new ArrayList<>();
 			currentBets.put(player, playerBets);
 		}
 		// TODO: Possibly merge bets?  Player may be putting more chips on an existing bet
@@ -178,7 +190,15 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		log.trace("{}: {} now has {} active bet(s)", this, player, playerBets.size());
 		return true;
 	}
-	
+
+	@Override
+	public List<RouletteBet> getBets(RoulettePlayer player) {
+
+		return currentBets.get(player) == null
+				? NO_BETS
+				: currentBets.get(player);
+	}
+
 	@Override
 	public String toString() {
 
@@ -223,6 +243,11 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 
 		log.trace("{}: Resolving {}<-{}", this, player, bet);
 		
-		// TODO: Resolve bet!
+		// Resolve bet
+		int result = wheel.getResult();
+		int winnings = bet.calculateWinnings(result);
+		if( winnings > 0 ) {
+			shout("{} has won {}c with their bet of {}", player, winnings, bet);
+		}
 	}
 }

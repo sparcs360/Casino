@@ -1,5 +1,7 @@
 package com.sparcs.casino.roulette.internal;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -62,6 +64,11 @@ public class RoulettePlayerImpl extends PlayerImpl implements RoulettePlayer {
 		return croupier.considerBet(this, bet);
 	}
 	
+	@Override
+	public List<RouletteBet> getBets() {
+
+		return croupier.getBets(this);
+	}
 	@Override
 	public String toString() {
 

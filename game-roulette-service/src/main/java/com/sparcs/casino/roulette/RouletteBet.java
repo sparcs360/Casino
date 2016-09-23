@@ -16,6 +16,20 @@ import com.sparcs.casino.roulette.internal.RouletteBetImpl;
 public interface RouletteBet extends Bet {
 
 	/**
+	 * Given the result, how much has this bet won?
+	 * 
+	 * @param result The number that came up on the wheel
+	 * @return The number of chips won
+	 */
+	int calculateWinnings(int result);
+
+	//####################################//
+	//#
+	//#	Implementations for various Bets
+	//#	
+	//####################################//
+
+	/**
 	 * Represents a bet on a single number.
 	 *  
 	 * @author Lee Newfeld
@@ -53,7 +67,13 @@ public interface RouletteBet extends Bet {
 			log.trace("{}: isValid={}", this, valid);
 			return valid;
 		}
-		
+
+		@Override
+		public int calculateWinnings(int result) {
+
+			return number==result ? chips*36 : 0;
+		}
+
 		@Override
 		public String toString() {
 
@@ -65,5 +85,5 @@ public interface RouletteBet extends Bet {
 	static SingleBet singleBet(int chips, int number) {
 
 		return new SingleBet(chips, number);
-	};
+	}
 }
