@@ -2,7 +2,10 @@ package com.sparcs.casino.roulette;
 
 import static org.junit.Assert.*;
 
+import java.util.function.Predicate;
+
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,5 +72,94 @@ public class RouletteCroupierTest extends BaseTest {
 		}
 
 		log.trace("-gameShouldRunWhenPlayerMakesNoBets");
+	}
+
+	@Test
+	public void betAcceptedFromPlayerWhenBettingAllowed() {
+
+		log.trace("+betAcceptedFromPlayerWhenBettingAllowed");
+
+		// Spectator joins game
+		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
+
+		// Wait until we can bet
+		waitUntil( player, p -> p.isBettingAllowed() );
+
+		// Put 1 chip on lucky 7!
+		assertTrue("Bet should be accepted", player.requestSingleBet(7, 1));
+
+		log.trace("-betAcceptedFromPlayerWhenBettingAllowed");
+	}
+
+	@Test
+	public void betRejectedFromNonPlayer() {
+
+		log.trace("+betRejectedFromNonPlayer");
+
+		// Spectator joins game, leves and rejoins the game
+		RoulettePlayer originalPlayer = (RoulettePlayer)room.joinGame(spectator);
+		spectator = (RouletteSpectator)room.leaveGame(originalPlayer);
+		RoulettePlayer currentPlayer = (RoulettePlayer)room.joinGame(spectator);
+
+		// Wait until we can bet
+		waitUntil( currentPlayer, p -> p.isBettingAllowed() );
+
+		// Put 1 chip on lucky 7!
+		assertFalse("Bet should be rejected", originalPlayer.requestSingleBet(7, 1));
+
+		log.trace("-betRejectedFromNonPlayer");
+	}
+
+	@Test
+	public void betRejectedFromPlayerWhenNotBettingAllowed() {
+
+		log.trace("+betRejectedFromPlayerWhenNotBettingAllowed");
+
+		// Spectator joins game
+		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
+
+		// Wait until we cannot bet
+		waitUntil( player, p -> !p.isBettingAllowed() );
+
+		// Put 1 chip on lucky 7!
+		assertFalse("Bet should be rejected", player.requestSingleBet(7, 1));
+
+		log.trace("-betRejectedFromPlayerWhenNotBettingAllowed");
+	}
+
+	@Ignore
+	@Test
+	public void winningSingleBetPaysOut() {
+
+		log.trace("+winningSingleBetPaysOut");
+
+		// Spectator joins game
+		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
+
+		// Wait until we can bet
+		waitUntil( player, p -> p.isBettingAllowed() );
+
+		// Put 1 chip on lucky 7!
+		assertTrue("Bet should be accepted", player.requestSingleBet(7, 1));
+
+		// Wait until Croupier resolves bets
+		waitUntil( player, p -> p.areBetsResolved() );
+		
+		log.trace("-winningSingleBetPaysOut");
+	}
+
+	/**
+	 * Run game loop until the condition is met for the given player.<br>
+	 * The urge to write an event queue is growing... <code>:o|</code>
+	 * 
+	 * @param condition
+	 */
+	private void waitUntil(RoulettePlayer player, Predicate<RoulettePlayer> condition) {
+
+		do {
+			
+			croupier.update(room);
+			
+		} while( !condition.test(player) );
 	}
 }

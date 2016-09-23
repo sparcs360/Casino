@@ -21,7 +21,7 @@ public class RouletteWheelImpl implements RouletteWheel {
 
 	private static final Logger log = LoggerFactory.getLogger(RouletteWheelImpl.class);
 
-	private State state;
+	private Stage stage;
 	private int result;
 
 	@PostConstruct
@@ -37,52 +37,52 @@ public class RouletteWheelImpl implements RouletteWheel {
 
 		log.trace("reset {}", this);
 
-		setState(State.AT_REST);
+		setStage(Stage.AT_REST);
 		setResult(RouletteWheel.RESULT_UNDEFINED);
 	}
 
 	@Override
-	public State update() {
+	public Stage update() {
 
 		log.trace("update {}", this);
 
-		switch(state) {
-			case AT_REST: setState(State.SPINNING); break;
-			case SPINNING: setState(State.BALL_SPINNING); break;
-			case BALL_SPINNING: setState(State.NO_MORE_BETS); break;
+		switch(stage) {
+			case AT_REST: setStage(Stage.SPINNING); break;
+			case SPINNING: setStage(Stage.BALL_SPINNING); break;
+			case BALL_SPINNING: setStage(Stage.NO_MORE_BETS); break;
 			case NO_MORE_BETS: {
-				setState(State.BALL_AT_REST);
+				setStage(Stage.BALL_AT_REST);
 				// TODO: Need a richer datatype than int to hold this result!
 				setResult((int)(Math.random() * 37));
 				break;
 			}
-			case BALL_AT_REST: setState(State.BETS_RESOLVED); break;
+			case BALL_AT_REST: setStage(Stage.BETS_RESOLVED); break;
 			case BETS_RESOLVED: reset(); break;
 			default: {
 
-				throw new RouletteException(String.format("Unexpected Wheel State - %s", state.name()));
+				throw new RouletteException(String.format("Unexpected Wheel State - %s", stage.name()));
 			}
 		}
 
-		return state;
+		return stage;
 	}
 
 	@Override
-	public State getState() {
+	public Stage getStage() {
 
-		return state;
+		return stage;
 	}
 
 	/**
-	 * Update current state (with logging)
+	 * Update current lifecycle stage (with logging)
 	 * 
-	 * @param value New {@link State}
+	 * @param value New {@link Stage}
 	 */
-	protected void setState(State value) {
+	protected void setStage(Stage value) {
 		
-		log.trace("state: {} -> {}", state, value);
+		log.trace("state: {} -> {}", stage, value);
 
-		state = value;
+		stage = value;
 	}
 
 	@Override

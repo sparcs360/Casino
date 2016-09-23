@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.sparcs.casino.Customer;
 import com.sparcs.casino.game.PlayerImpl;
+import com.sparcs.casino.roulette.RouletteCroupier;
 import com.sparcs.casino.roulette.RoulettePlayer;
 import com.sparcs.casino.roulette.RouletteRoom;
 
@@ -24,15 +25,39 @@ public class RoulettePlayerImpl extends PlayerImpl implements RoulettePlayer {
 
 	private static final Logger log = LoggerFactory.getLogger(RoulettePlayerImpl.class);
 
+	private RouletteCroupier croupier;
+	
 	@Autowired
-	protected RoulettePlayerImpl(Customer customer) {
+	protected RoulettePlayerImpl(Customer customer, RouletteCroupier croupier) {
 		
 		super(customer);
+		
+		this.croupier = croupier;
 	}
 
 	@PostConstruct
 	private void initialise() {
 
 		log.trace("Created {}", this);
+	}
+
+	@Override
+	public boolean isBettingAllowed() {
+
+		return croupier.isBettingAllowed();
+	}
+
+	@Override
+	public boolean areBetsResolved() {
+
+		return croupier.areBetsResolved();
+	}
+
+	@Override
+	public boolean requestSingleBet(int number, int amount) {
+
+		log.trace("{}: requestSingleBet(number={}, amount={})", this, number, amount);
+
+		return croupier.considerSingleBet(this, number, amount);
 	}
 }

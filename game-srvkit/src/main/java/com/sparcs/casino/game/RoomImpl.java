@@ -192,7 +192,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		Customer customer = spectator.getCustomer();
 		Player player = grantPlayerRole(customer);
 		log.trace("{} was granted {}", customer.getNickName(),
-				spectator.getClass().getSimpleName());
+				player.getClass().getSimpleName());
 		gameManager.getGameState().getPlayers().add(player);
         return player;
 	}
@@ -243,7 +243,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		Player player = null;
         try {
         	
-			player = (Player)applicationContext.getBean("Player", customer);
+			player = (Player)applicationContext.getBean("Player", customer, gameManager);
 
         } catch( BeansException e ) {
         	

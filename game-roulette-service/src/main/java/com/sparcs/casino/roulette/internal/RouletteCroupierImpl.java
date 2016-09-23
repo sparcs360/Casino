@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.sparcs.casino.game.GameManagerImpl;
 import com.sparcs.casino.game.Room;
 import com.sparcs.casino.roulette.RouletteCroupier;
+import com.sparcs.casino.roulette.RoulettePlayer;
 import com.sparcs.casino.roulette.RouletteWheel;
 
 /**
@@ -32,6 +33,8 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 
 	private static final Logger log = LoggerFactory.getLogger(RouletteCroupierImpl.class);
 	
+	private Stage stage;
+	
 	@Autowired
 	private RouletteWheel wheel;
 
@@ -48,9 +51,10 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 
 		log.trace("{}.{}: onInitialise", room, this);
 
+		stage = Stage.STARTING_NEW_GAME;
 		nextWheelEventTime = getGameState().getGameTime() + WHEEL_AT_REST_DURATION;
 
-		shout("Greetings {}!  Feel free to watch, or take a seat and play", room.getSpectators());
+		shout("Greetings!  Feel free to watch, or take a seat and play");
 	}
 
 	@Override
@@ -73,6 +77,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 			switch(wheel.update()) {
 			
 				case AT_REST:
+					stage = Stage.STARTING_NEW_GAME;
 					shout("The Croupier gets ready to start a new game...");
 					nextWheelEventTime = getGameState().getGameTime() + WHEEL_AT_REST_DURATION;
 					break;
@@ -98,6 +103,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 					break;
 
 				case BETS_RESOLVED:
+					stage = Stage.BETS_RESOLVED;
 					shout("The Croupier has resolved all the bets");
 					nextWheelEventTime = getGameState().getGameTime() + WHEEL_BETS_RESOLVED_DURATION;
 					break;
@@ -109,5 +115,49 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	protected void onShutdown(Room room) {
 
 		log.trace("{}.{}: onShutdown", room, this);
+	}
+
+	@Override
+	public boolean isBettingAllowed() {
+
+		return wheel.getStage().isBettingAllowed();
+	}
+
+	@Override
+	public boolean areBetsResolved() {
+
+		return stage==Stage.BETS_RESOLVED;
+	}
+
+	@Override
+	public boolean considerSingleBet(RoulettePlayer player, int number, int amount) {
+
+		log.trace("{}: considerSingleBet(player={}, number={}, amount={})",
+				this, player, number, amount);
+
+		// Must be in a betting phase
+		if( !isBettingAllowed() ) {
+			log.trace("{}: Rejecting bet (betting not currently allowed)", this);
+			return false;
+		}
+		
+		// Player must be seated at the table
+		if( !getGameState().getPlayers().contains(player) ) {
+			log.trace("{}: Rejecting bet (player not in player list)", this);
+			return false;
+		}
+		
+		// TODO: Player must have funds - assume infinite chips for now
+		
+		// Verify number
+		if( !RouletteWheel.canBetOnNumber(number) ) {
+			log.trace("{}: Rejecting bet (can't bet on this number)", this);
+			return false;
+		}
+
+		// We're accepting this bet, add it to the list of bets
+		
+		log.debug("{}: Bet accepted", this);
+		return true;
 	}
 }
