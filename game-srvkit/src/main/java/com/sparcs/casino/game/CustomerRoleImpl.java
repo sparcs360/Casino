@@ -27,13 +27,31 @@ public abstract class CustomerRoleImpl implements CustomerRole {
 		return customer;
 	}
 
-    //####################################################################//
-	// Delegate methods on the Customer interface to the Customer 
-    //####################################################################//
+    //######################################################################//
+	// Delegate methods on the Customer interface to the decorated Customer 
+    //######################################################################//
 	
 	@Override
 	public String getNickName() {
 
 		return customer.getNickName();
+	}
+
+	@Override
+	public int getChipCount() {
+		
+		return customer.getChipCount();
+	}
+
+	@Override
+	public void deductChips(int stake) {
+
+		customer.deductChips(stake);
+	}
+
+	@Override
+	public void addChips(int chipsWon) {
+
+		customer.addChips(chipsWon);
 	}
 }

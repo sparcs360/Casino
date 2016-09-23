@@ -3,16 +3,16 @@ package com.sparcs.casino.roulette;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Field;
 import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ReflectionUtils;
 
 import com.sparcs.casino.BaseTest;
 import com.sparcs.casino.roulette.RouletteBet.SingleBet;
@@ -29,15 +29,14 @@ public class RouletteCroupierTest extends BaseTest {
 
 	private static final Logger log = LoggerFactory.getLogger(RouletteCroupierTest.class);
 
-	@Autowired
+	@Autowired 
 	private RouletteRoomImpl room;
-
-	@InjectMocks
+	
 	private RouletteCroupierImpl croupier;
 
 	@Autowired
 	private RouletteWheel realWheel;
-	@Mock
+	
 	private RouletteWheel riggedWheel;
 
 	private RouletteSpectator spectator;
@@ -47,13 +46,21 @@ public class RouletteCroupierTest extends BaseTest {
 
 		super.beforeTest();
 
-		// Spectator enters the room
-		spectator = (RouletteSpectator)room.enter(lee);
-		croupier = (RouletteCroupierImpl)room.getGameManager();
-
 		// Create a rigged wheel!
 		riggedWheel = Mockito.spy(realWheel);
 		when(riggedWheel.getResult()).thenReturn(7);
+		assertEquals(7, riggedWheel.getResult());
+
+		// Spectator enters the room
+		spectator = (RouletteSpectator)room.enter(lee);
+		croupier = (RouletteCroupierImpl)room.getGameManager();
+		
+		// Replace real wheel with rigged wheel
+		Field wheelField = ReflectionUtils.findField(RouletteCroupierImpl.class, "wheel");
+		assertNotNull("Expecting RouletteWheel to be in a field called 'wheel'", wheelField);
+		ReflectionUtils.makeAccessible(wheelField);
+		ReflectionUtils.setField(wheelField, croupier, riggedWheel);
+		assertEquals(7, croupier.getSpinResult());
 
 		log.trace("Feature under test: {}", croupier);
 	}
@@ -102,12 +109,35 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
+		int chipsBefore = player.getChipCount();
 		SingleBet bet = RouletteBet.singleBet(1, 7);
 		assertTrue("Bet should be accepted", player.requestBet(bet));
 		assertEquals("Player should have 1 active bet", 1, player.getBets().size());
 		assertTrue("The only bet should be the one just placed", player.getBets().contains(bet));
+		assertEquals("Player should have one less chip", chipsBefore - 1, player.getChipCount());
 
 		log.trace("-betAcceptedFromPlayerWhenBettingAllowed");
+	}
+
+	@Test
+	public void betRejectedFromPlayerWhenNotEnoughChips() {
+
+		log.trace("+betRejectedFromPlayerWhenNotEnoughChips");
+
+		// Spectator joins game
+		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
+
+		// Wait until we can bet
+		waitUntil( player, p -> p.isBettingAllowed() );
+
+		// Put 1M chip on lucky 7!
+		int chipsBefore = player.getChipCount();
+		SingleBet bet = RouletteBet.singleBet(1000000, 7);
+		assertFalse("Bet should be rejected", player.requestBet(bet));
+		assertEquals("Player should have no active bet", 0, player.getBets().size());
+		assertEquals("Player should have same number of chip as before", chipsBefore, player.getChipCount());
+
+		log.trace("-betRejectedFromPlayerWhenNotEnoughChips");
 	}
 
 	@Test
@@ -124,10 +154,12 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( currentPlayer, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
+		int chipsBefore = currentPlayer.getChipCount();
 		SingleBet bet = RouletteBet.singleBet(1, 7);
 		assertFalse("Bet should be rejected", originalPlayer.requestBet(bet));
 		assertEquals("Original Player should have no active bet", 0, originalPlayer.getBets().size());
 		assertEquals("Current Player should have no active bet", 0, currentPlayer.getBets().size());
+		assertEquals("Current Player should have same number of chips", chipsBefore, currentPlayer.getChipCount());
 
 		log.trace("-betRejectedFromNonPlayer");
 	}
@@ -145,15 +177,14 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1 chip on lucky 7!
 		assertFalse("Bet should be rejected", player.requestBet(RouletteBet.singleBet(1, 7)));
-		assertEquals("Player should have no active bet", 0, player.getBets().size());
 
 		log.trace("-betRejectedFromPlayerWhenBettingNotAllowed");
 	}
 
 	@Test
-	public void winningSingleBetPaysOut() {
+	public void winningBetPaysOut() {
 
-		log.trace("+winningSingleBetPaysOut");
+		log.trace("+winningBetPaysOut");
 
 		// Spectator joins game
 		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
@@ -162,13 +193,41 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
+		int chipsBefore = player.getChipCount();
 		SingleBet bet = RouletteBet.singleBet(1, 7);
 		assertTrue("Bet should be accepted", player.requestBet(bet));
 
 		// Wait until Croupier resolves bets
 		waitUntil( player, p -> p.areBetsResolved() );
-		
-		log.trace("-winningSingleBetPaysOut");
+
+		assertEquals("Winnings should be added", chipsBefore + 35, player.getChipCount());
+		assertEquals("Player should have no active bet", 0, player.getBets().size());
+
+		log.trace("-winningBetPaysOut");
+	}
+
+	@Test
+	public void loosingBetDoesntPayOut() {
+
+		log.trace("+loosingBetDoesntPayOut");
+
+		// Spectator joins game
+		RoulettePlayer player = (RoulettePlayer)room.joinGame(spectator);
+
+		// Wait until we can bet
+		waitUntil( player, p -> p.isBettingAllowed() );
+
+		// Put 1 chip on #1 (surely it can't be a 7 again?)
+		int chipsBefore = player.getChipCount();
+		SingleBet bet = RouletteBet.singleBet(1, 1);
+		assertTrue("Bet should be accepted", player.requestBet(bet));
+
+		// Wait until Croupier resolves bets
+		waitUntil( player, p -> p.areBetsResolved() );
+
+		assertEquals("Should have one less chip", chipsBefore - 1, player.getChipCount());
+
+		log.trace("-loosingBetDoesntPayOut");
 	}
 
 	/**

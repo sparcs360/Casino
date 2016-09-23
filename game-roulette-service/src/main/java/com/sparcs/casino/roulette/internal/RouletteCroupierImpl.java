@@ -30,6 +30,8 @@ import com.sparcs.casino.roulette.RouletteWheel;
 @Scope("prototype")
 public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCroupier {
 
+	private static final Logger log = LoggerFactory.getLogger(RouletteCroupierImpl.class);
+
 	// TODO: Make these .properties?
 	private static final int WHEEL_AT_REST_DURATION = 5;
 	private static final int WHEEL_SPINNING_DURATION = 5;
@@ -38,7 +40,6 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	private static final int WHEEL_BALL_AT_REST_DURATION = 5;
 	private static final int WHEEL_BETS_RESOLVED_DURATION = 5;
 
-	private static final Logger log = LoggerFactory.getLogger(RouletteCroupierImpl.class);
 	private static final List<RouletteBet> NO_BETS = Collections.unmodifiableList(new ArrayList<>());
 
 	private Stage stage;
@@ -133,6 +134,16 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		}
 	}
 
+	/**
+	 * @return The number that the ball has settled on.
+	 * {@link RouletteWheel#RESULT_UNDEFINED} if the ball is in the
+	 * Croupier's hand.
+	 */
+	public int getSpinResult() {
+
+		return wheel.getResult();
+	}
+
 	@Override
 	protected void onShutdown(Room room) {
 
@@ -169,7 +180,11 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 			return false;
 		}
 		
-		// TODO: Player must have funds - assume infinite chips for now
+		// Player must have enough chips
+		if( player.getChipCount() < bet.getStake() ) {
+			log.trace("{}: Rejecting bet (not enough chips)", this);
+			return false;
+		}
 		
 		// Validate bet
 		if( !bet.isValid(this) ) {
@@ -177,18 +192,41 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 			return false;
 		}
 
-		// We're accepting this bet, add it to the list of bets
+		// We're accepting this bet...
+		acceptBet(player, bet);
+		return true;
+	}
+
+	/**
+	 * Accept a {@link RouletteBet bet} made by a {@link RoulettePlayer player}.
+	 * 
+	 * @param player
+	 * @param bet
+	 */
+	private void acceptBet(RoulettePlayer player, RouletteBet bet) {
+
+		// Get current list of Bets
 		List<RouletteBet> playerBets = currentBets.get(player);
 		if( playerBets == null ) {
 			log.trace("{}: This is the first bet for {}", this, player);
 			playerBets = new ArrayList<>();
 			currentBets.put(player, playerBets);
 		}
+
 		// TODO: Possibly merge bets?  Player may be putting more chips on an existing bet
-		playerBets.add(bet);
-		log.debug("{}: Bet accepted", this);
-		log.trace("{}: {} now has {} active bet(s)", this, player, playerBets.size());
-		return true;
+
+		// Add bet to the list of bets
+		// (Imagining a call to the Customer microservice...) 
+		try {
+			
+			log.debug("{}: Bet accepted", this);
+			player.deductChips(bet.getStake());
+			playerBets.add(bet);
+			log.trace("{}: {} now has {} active bet(s)", this, player, playerBets.size());
+
+		} catch( Exception e ) {
+			
+		}
 	}
 
 	@Override
@@ -246,8 +284,11 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		// Resolve bet
 		int result = wheel.getResult();
 		int winnings = bet.calculateWinnings(result);
-		if( winnings > 0 ) {
-			shout("{} has won {}c with their bet of {}", player, winnings, bet);
+		if( winnings == 0 ) {
+			return;
 		}
+
+		shout("{} has won {}c with their bet of {}", player, winnings, bet);
+		player.addChips(winnings);
 	}
 }

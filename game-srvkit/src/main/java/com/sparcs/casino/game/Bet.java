@@ -9,9 +9,9 @@ package com.sparcs.casino.game;
 public interface Bet {
 
 	/**
-	 * @return The number of chips wagered.
+	 * @return The number of chips at risk.
 	 */
-	int getChipsWagered();
+	int getStake();
 
 	/**
 	 * @return true if the {@link GameManager} considers this to be
