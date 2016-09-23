@@ -72,58 +72,62 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 
 		Objects.requireNonNull(customer, "customer");
 
+		log.trace("{}: {} entered", this, customer);
+
 		// Create the GameManager if it doesn't exist
 		if( gameManager == null ) {
 			
-			gameManager = (GameManager)applicationContext.getBean("GameManager");
-			gameManager.initialise(this);
+			createGameManager();
 		}
 		
-		Spectator spectator = grantSpectatorRole(customer);
-        spectators.add(spectator);
-        return spectator;
+		return addSpectator(customer);
 	}
 
 	@Override
 	public Player joinGame(Spectator spectator) {
 
 		Objects.requireNonNull(spectator, "spectator");
+		
+		log.trace("{}: {} wants to join the game", this, spectator);
+
 		if( !spectators.contains(spectator) ) {
 			
 			throw new GameException("Only spectators can join the game"); 
 		}
 
-        spectators.remove(spectator);
-		Player player = grantPlayerRole(spectator.getCustomer());
-		gameManager.getGameState().getPlayers().add(player);
-        return player;
+        removeSpectator(spectator);
+		return addPlayer(spectator);
 	}
 
 	@Override
 	public Spectator leaveGame(Player player) {
 
 		Objects.requireNonNull(player, "player");
+		
+		log.trace("{}: {} wants to leave the game", this, player);
+
 		if( !gameManager.getGameState().getPlayers().contains(player) ) {
 			
 			throw new GameException("Only players can leave the game"); 
 		}
 		
-        gameManager.getGameState().getPlayers().remove(player);
-        Spectator spectator = grantSpectatorRole(player.getCustomer());
-        spectators.add(spectator);
-        return spectator;
+        removePlayer(player);
+        return addSpectator(player.getCustomer());
 	}
 
 	@Override
 	public void exit(Spectator spectator) {
 
 		Objects.requireNonNull(spectator, "spectator");
+
+		log.trace("{}: {} wants to exit the room", this, spectator);
+
 		if( !spectators.contains(spectator) ) {
 			
 			throw new GameException("Only spectators can leave the room"); 
 		}
 
-		spectators.remove(spectator);
+		removeSpectator(spectator);
 		
 		// Kill the GameManager if no one is in the room
 		if( isEmpty() ) {
@@ -148,7 +152,72 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		return gameManager.update(this);
 	}
 
+    //---
+    
     /**
+     * Create and initialise a {@link GameManager}.
+     */
+	private void createGameManager() {
+		
+		log.trace("Creating GameManager");
+		
+		gameManager = (GameManager)applicationContext.getBean("GameManager");
+		gameManager.initialise(this);
+	}
+
+	/**
+	 * Grant a {@link Customer} the {@link Spectator} role.
+	 * 
+	 * @param customer The {@link Customer} to grant the role to
+	 * @return The {@link Spectator}
+	 */
+	private Spectator addSpectator(Customer customer) {
+
+		Spectator spectator = grantSpectatorRole(customer);
+		log.trace("{} was granted {}", customer,
+				spectator.getClass().getSimpleName());
+        spectators.add(spectator);
+		return spectator;
+	}
+
+	/**
+	 * Revoke the {@link Spectator} role from a {@link Customer}.
+	 * 
+	 * @param spectator The {@link Spectator} role.
+	 */
+	private void removeSpectator(Spectator spectator) {
+		
+		log.trace("{} was revoked {}", spectator.getCustomer(), spectator);
+		spectators.remove(spectator);
+	}
+
+	/**
+	 * Grant a {@link Customer} the {@link Player} role.
+	 * 
+	 * @param customer The {@link Customer} to grant the role to
+	 * @return The {@link Player}
+	 */
+	private Player addPlayer(Spectator spectator) {
+		
+		Customer customer = spectator.getCustomer();
+		Player player = grantPlayerRole(customer);
+		log.trace("{} was granted {}", customer, player);
+		gameManager.getGameState().getPlayers().add(player);
+        return player;
+	}
+
+	/**
+	 * Revoke the {@link Player} role from a {@link Customer}.
+	 * 
+	 * @param player The {@link Player} role.
+	 */
+	private void removePlayer(Player player) {
+		
+		log.trace("{} was revoked {}", player.getCustomer(), player);
+		gameManager.getGameState().getPlayers().remove(player);
+	}
+
+	/**
      * Decorate a {@link Customer} with the {@link Spectator} role.
      * 
      * @param customer The Customer to grant the role to
@@ -182,7 +251,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		Player player = null;
         try {
         	
-			player = (Player)applicationContext.getBean("Player", customer);
+			player = (Player)applicationContext.getBean("Player", customer, gameManager);
 
         } catch( BeansException e ) {
         	

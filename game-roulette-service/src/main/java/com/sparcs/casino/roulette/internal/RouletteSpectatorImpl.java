@@ -35,4 +35,11 @@ public class RouletteSpectatorImpl extends SpectatorImpl implements RouletteSpec
 
 		log.trace("Created {}", this);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("RouletteSpectator@%x[%s]",
+				this.hashCode(), getNickName());
+	}
 }

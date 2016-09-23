@@ -13,11 +13,22 @@ public interface RouletteWheel {
 	public static final int RESULT_UNDEFINED = -1;
 
 	/**
-	 * Represents the various states of a {@link RouletteWheel}
+	 * Represents the lifecycle stage of a {@link RouletteWheel}.<br>
+	 * <p>
+	 * Use {@link RouletteWheel#update()} to move to the next stage:
+	 * <ul>
+	 * <li>{@link #AT_REST}</li>
+	 * <li>{@link #SPINNING}</li>
+	 * <li>{@link #BALL_SPINNING}</li>
+	 * <li>{@link #NO_MORE_BETS}</li>
+	 * <li>{@link #BALL_AT_REST}</li>
+	 * <li>{@link #BETS_RESOLVED}</li>
+	 * </ul>
+	 * </p>
 	 * 
 	 * @author Lee Newfeld
 	 */
-	static enum State {
+	static enum Stage {
 		
 		/**
 		 * <li>The Wheel is <b>at rest</b>.</li>
@@ -61,71 +72,80 @@ public interface RouletteWheel {
 		 * <li>Players cannot bet.</li>
 		 * <li>The Croupier has <b>resolved all bets</b> and is about to start a new game.</li>
 		 */
-		BETS_RESOLVED,
+		BETS_RESOLVED,;
+
+		/**
+		 * @return true if players are allowed to bet during this stage
+		 */
+		public boolean isBettingAllowed() {
+
+			return this==AT_REST || this==SPINNING || this==BALL_SPINNING;
+		}
 	}
 	
 	/**
-	 * Reset the Wheel back to its initial {@link State} (i.e., {@link State#AT_REST})
+	 * Reset the Wheel back to its initial {@link Stage} (i.e., {@link Stage#AT_REST})
 	 */
 	void reset();
-
-	/**
-	 * Start the Wheel spinning.
-	 * 
-	 * @throws RouletteException If the wheel's {@link #getState() state}
-	 * isn't {@link State#AT_REST}
-	 */
-	void start();
 
 	/**
 	 * <p>Move the wheel to the next stage in its lifecylce.</p>
 	 * <p>
 	 * <table border='1'>
 	 * 	<tr>
-	 *   <td><b>Current State</b></td>
-	 *   <td><b>State After Update</b></td>
+	 *   <td><b>Current Stage</b></td>
+	 *   <td><b>Stage After Update</b></td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#AT_REST}</td>
-	 *   <td>{@link State#AT_REST}</td>
+	 *   <td>{@link Stage#AT_REST}</td>
+	 *   <td>{@link Stage#SPINNING}</td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#SPINNING} (via {@link #start()})</td>
-	 *   <td>{@link State#BALL_SPINNING}</td>
+	 *   <td>{@link Stage#SPINNING}</td>
+	 *   <td>{@link Stage#BALL_SPINNING}</td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#BALL_SPINNING}</td>
-	 *   <td>{@link State#NO_MORE_BETS}</td>
+	 *   <td>{@link Stage#BALL_SPINNING}</td>
+	 *   <td>{@link Stage#NO_MORE_BETS}</td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#NO_MORE_BETS}</td>
-	 *   <td>{@link State#BALL_AT_REST}</td>
+	 *   <td>{@link Stage#NO_MORE_BETS}</td>
+	 *   <td>{@link Stage#BALL_AT_REST}</td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#BALL_AT_REST}</td>
-	 *   <td>{@link State#BETS_RESOLVED}</td>
+	 *   <td>{@link Stage#BALL_AT_REST}</td>
+	 *   <td>{@link Stage#BETS_RESOLVED}</td>
 	 *  </tr>
 	 * 	<tr>
-	 *   <td>{@link State#BETS_RESOLVED}</td>
-	 *   <td>{@link State#AT_REST}</td>
+	 *   <td>{@link Stage#BETS_RESOLVED}</td>
+	 *   <td>{@link Stage#AT_REST}</td>
 	 *  </tr>
 	 * </table>
 	 * </p>
 	 * 
-	 * @return The new {@link #getState() state} of the Wheel (same as {@link #getState()}) 
+	 * @return The new {@link #getStage() state} of the Wheel (same as {@link #getStage()}) 
 	 */
-	State update();
+	Stage update();
 	
 	/**
-	 * @return The {@link State} of the Wheel.
+	 * @return The current lifecycle {@link Stage} of the Wheel.
 	 */
-	State getState();
+	Stage getStage();
 
 	/**
 	 * @return The number that the Ball landed on.<br>
-	 * Only valid if the {@link #getState() current state}
-	 * of the Wheel is {@link State#BALL_AT_REST} or {@link State#BETS_RESOLVED}.  At all
+	 * Only valid if the {@link #getStage() current state}
+	 * of the Wheel is {@link Stage#BALL_AT_REST} or {@link Stage#BETS_RESOLVED}.  At all
 	 * other times, the return value is {@link RouletteWheel.RESULT_UNDEFINED}.
 	 */
 	int getResult();
+
+	/**
+	 * @param number A number on the Wheel
+	 * @return true if this number can be bet on
+	 */
+	static boolean canBetOnNumber(int number) {
+
+		return number > 0 && number <= 36;
+	}
 }

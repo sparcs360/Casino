@@ -80,7 +80,6 @@ public abstract class BaseTest /*extends AbstractTransactionalJUnit4SpringContex
 	@Mock
 	protected Casino casino;
 
-	@Mock
 	protected Customer lee;
 
     @Before
@@ -90,7 +89,7 @@ public abstract class BaseTest /*extends AbstractTransactionalJUnit4SpringContex
         
         // Create mocks for other Domain entities
         casino = Mockito.mock(Casino.class);
-        lee = Mockito.mock(Customer.class);
+        lee = new CustomerImpl("SPARCS", 100);
 
         // Add mock functionality
         when(casino.signIn(eq("Lee"), anyString())).thenReturn(lee);

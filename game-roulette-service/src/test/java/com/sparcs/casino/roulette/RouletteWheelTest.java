@@ -2,10 +2,10 @@ package com.sparcs.casino.roulette;
 
 import static org.junit.Assert.*;
 
+import java.util.stream.IntStream;
+
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class RouletteWheelTest extends BaseTest {
 
 		log.trace("+shouldBeAtRestWhenConstructed");
 		
-		assertEquals(RouletteWheel.State.AT_REST, wheel.getState());
+		assertEquals(RouletteWheel.Stage.AT_REST, wheel.getStage());
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldBeAtRestWhenConstructed");
@@ -49,42 +49,10 @@ public class RouletteWheelTest extends BaseTest {
 		log.trace("+shouldBeAtRestAfterReset");
 		
 		wheel.reset();
-		assertEquals(RouletteWheel.State.AT_REST, wheel.getState());
+		assertEquals(RouletteWheel.Stage.AT_REST, wheel.getStage());
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldBeAtRestAfterReset");
-	}
-
-	@Test
-	public void shouldStartSpinningWhenStarted() {
-
-		log.trace("+shouldStartSpinningWhenStarted");
-		
-		wheel.start();
-		assertEquals(RouletteWheel.State.SPINNING, wheel.getState());
-		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
-
-		log.trace("-shouldStartSpinningWhenStarted");
-	}
-
-	@Rule public ExpectedException wheelCanOnlyBeStartedWhenAtRest =
-			ExpectedException.none();
-	@Test
-	public void shouldntStartWhenNotAtRest() {
-
-		log.trace("+shouldntStartWhenNotAtRest");
-
-		wheel.start();
-		
-		wheelCanOnlyBeStartedWhenAtRest.expect(RouletteException.class);
-		/* TODO: A way of distinguishing one Exception from another
-		 * (subclass?  discriminator field?) 
-		 */
-		//wheelCanOnlyBeStartedWhenAtRest.expectMessage("...");
-
-		wheel.start();
-
-		log.trace("-shouldntStartWhenNotAtRest");
 	}
 
 	@Test
@@ -92,10 +60,10 @@ public class RouletteWheelTest extends BaseTest {
 
 		log.trace("+shouldBeResetableWhileSpinning");
 		
-		wheel.start();
+		wheel.update();
 		wheel.reset();
-		wheel.start();
-		assertEquals(RouletteWheel.State.SPINNING, wheel.getState());
+		wheel.update();
+		assertEquals(RouletteWheel.Stage.SPINNING, wheel.getStage());
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
 
 		log.trace("-shouldBeResetableWhileSpinning");
@@ -106,42 +74,69 @@ public class RouletteWheelTest extends BaseTest {
 
 		log.trace("+shouldFollowLifecycleAfterStart");
 
-		RouletteWheel.State state;
 
-		// wheel is initially AT_REST
+		// AT_REST
+		RouletteWheel.Stage stage = wheel.getStage();
 		
-		wheel.start(); // SPINNING
+		assertTrue("Players can bet", stage.isBettingAllowed());
 
-		state = wheel.update();	// BALL_SPINNING
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.BALL_SPINNING, state);
+		// SPINNING
+		stage = wheel.update();
+		assertSame("Returned State should be the current state", wheel.getStage(), stage);
+		assertEquals(RouletteWheel.Stage.SPINNING, stage);
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+		
+		assertTrue("Players can bet", stage.isBettingAllowed());
 
-		state = wheel.update();	// NO_MORE_BETS
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.NO_MORE_BETS, state);
+		// BALL_SPINNING
+		stage = wheel.update();
+		assertSame("Returned State should be the current state", wheel.getStage(), stage);
+		assertEquals(RouletteWheel.Stage.BALL_SPINNING, stage);
 		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+		
+		assertTrue("Players can bet", stage.isBettingAllowed());
 
-		state = wheel.update();	// BALL_AT_REST
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.BALL_AT_REST, state);
+		// NO_MORE_BETS
+		stage = wheel.update();
+		assertSame("Returned State should be the current state", wheel.getStage(), stage);
+		assertEquals(RouletteWheel.Stage.NO_MORE_BETS, stage);
+		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+		
+		assertFalse("Players cannot bet", stage.isBettingAllowed());
+
+		// BALL_AT_REST
+		stage = wheel.update();
+		assertSame("Returned State should be the current state", wheel.getStage(), stage);
+		assertEquals(RouletteWheel.Stage.BALL_AT_REST, stage);
 		assertNotEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+		
+		assertFalse("Players cannot bet", stage.isBettingAllowed());
 
-		state = wheel.update();	// BETS_RESOLVED
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.BETS_RESOLVED, state);
+		// BETS_RESOLVED
+		stage = wheel.update();
+		assertSame("Returned State should be the current state", wheel.getStage(), stage);
+		assertEquals(RouletteWheel.Stage.BETS_RESOLVED, stage);
 		assertNotEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+		
+		assertFalse("Players cannot bet", stage.isBettingAllowed());
 
-		state = wheel.update();	// AT_REST
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.AT_REST, state);
-		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
-
-		state = wheel.update();	// AT_REST (forever... until started again)
-		assertSame("Returned State should be the current state", wheel.getState(), state);
-		assertEquals(RouletteWheel.State.AT_REST, state);
-		assertEquals(RouletteWheel.RESULT_UNDEFINED, wheel.getResult());
+		// AT_REST (again)
+		assertEquals(RouletteWheel.Stage.AT_REST, wheel.update());
 
 		log.trace("-shouldFollowLifecycleAfterStart");
+	}
+
+	@Test
+	public void shouldValidateBetableNumbers() {
+
+		log.trace("+shouldValidateBetableNumbers");
+		
+		IntStream.of(-1, 0, 37)
+				 .forEach(i -> assertFalse(RouletteWheel.canBetOnNumber(i)));
+
+		IntStream.range(1, 36)
+				 .forEach(i -> assertTrue(RouletteWheel.canBetOnNumber(i)));
+
+		log.trace("-shouldValidateBetableNumbers");
 	}
 }
