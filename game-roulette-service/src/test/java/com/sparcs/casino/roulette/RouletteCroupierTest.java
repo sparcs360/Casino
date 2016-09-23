@@ -1,23 +1,16 @@
 package com.sparcs.casino.roulette;
 
 import static org.junit.Assert.*;
-//import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sparcs.casino.BaseTest;
-import com.sparcs.casino.game.Spectator;
 import com.sparcs.casino.roulette.internal.RouletteCroupierImpl;
+import com.sparcs.casino.roulette.internal.RouletteRoomImpl;
 
 /**
  * Tests of RouletteCroupier behaviour
@@ -28,33 +21,21 @@ public class RouletteCroupierTest extends BaseTest {
 
 	private static final Logger log = LoggerFactory.getLogger(RouletteCroupierTest.class);
 
-	@Mock
-	RouletteRoom room;
-	
-	@Mock
-	Spectator spectator;
-
-	List<Spectator> spectators;
-	
 	@Autowired
+	private RouletteRoomImpl room;
+	
 	private RouletteCroupierImpl croupier;
 
+	private RouletteSpectator spectator;
+	
 	@Before
 	public void beforeTest() {
 
 		super.beforeTest();
 
-		spectators = new ArrayList<>();
-
-        // Create mocks
-        room = Mockito.mock(RouletteRoom.class);
-        spectator = Mockito.mock(Spectator.class);
-        
-        // Add mock functionality
-        when(room.getGameManager()).thenReturn(croupier);
-        when(room.getSpectators()).thenReturn(spectators);
-        when(spectator.toString()).thenReturn("Lee");
-        when(spectator.getCustomer()).thenReturn(lee);
+		// Spectator enters the room
+		spectator = (RouletteSpectator)room.enter(lee);
+		croupier = (RouletteCroupierImpl)room.getGameManager();
 
 		log.trace("Feature under test: {}", croupier);
 	}
@@ -62,21 +43,31 @@ public class RouletteCroupierTest extends BaseTest {
 	@Test
 	public void gameShouldRunWhenSpectatorEntersRoom() {
 
-		log.trace("+todo");
+		log.trace("+gameShouldRunWhenSpectatorEntersRoom");
 
-		// Fired when someone walks into the empty room
-		spectators.add(spectator);
-		croupier.initialise(room);
-		
 		// Spectator stays for a while...
 		for( int i=0; i<50; i++ ) {
 			
 			assertTrue("Game should never end", croupier.update(room) );
 		}
 
-		// Spectator leaves
-		croupier.shutdown(room);
+		log.trace("-gameShouldRunWhenSpectatorEntersRoom");
+	}
 
-		log.trace("-todo");
+	@Test
+	public void gameShouldRunWhenPlayerMakesNoBets() {
+
+		log.trace("+gameShouldRunWhenPlayerMakesNoBets");
+		
+		// Spectator joins game
+		room.joinGame(spectator);
+
+		// Spectator stays for a while...
+		for( int i=0; i<50; i++ ) {
+			
+			assertTrue("Game should never end", croupier.update(room) );
+		}
+
+		log.trace("-gameShouldRunWhenPlayerMakesNoBets");
 	}
 }
