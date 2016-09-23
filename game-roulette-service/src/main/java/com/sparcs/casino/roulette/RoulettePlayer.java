@@ -1,5 +1,7 @@
 package com.sparcs.casino.roulette;
 
+import java.util.List;
+
 import com.sparcs.casino.Customer;
 import com.sparcs.casino.game.Player;
 
@@ -10,4 +12,27 @@ import com.sparcs.casino.game.Player;
  */
 public interface RoulettePlayer extends Player {
 
+	/**
+	 * @return true if {@link #requestBet(RouletteBet) betting} is allowed
+	 */
+	boolean isBettingAllowed();
+
+	/**
+	 * @return true if {@link #requestBet(RouletteBet) bets} have been resolved
+	 * for the current game.
+	 */
+	boolean areBetsResolved();
+
+	/**
+	 * Attempt to place a bet on the current game.
+	 * 
+	 * @param bet The type of bet you wish to place.
+	 * @return true is the bet was accepted.
+	 */
+	boolean requestBet(RouletteBet bet);
+
+	/**
+	 * @return The list of {@link RouletteBet bets} currently in play
+	 */
+	List<RouletteBet> getBets();
 }

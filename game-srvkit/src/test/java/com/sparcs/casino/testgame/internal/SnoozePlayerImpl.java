@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.sparcs.casino.Customer;
 import com.sparcs.casino.game.PlayerImpl;
+import com.sparcs.casino.testgame.SnoozeGameManager;
 import com.sparcs.casino.testgame.SnoozePlayer;
 import com.sparcs.casino.testgame.SnoozeRoom;
 
@@ -24,8 +25,11 @@ public class SnoozePlayerImpl extends PlayerImpl implements SnoozePlayer {
 
 	private static final Logger log = LoggerFactory.getLogger(SnoozePlayerImpl.class);
 
+	@SuppressWarnings("unused")
+	private SnoozeGameManager gameManager;
+	
 	@Autowired
-	protected SnoozePlayerImpl(Customer customer) {
+	protected SnoozePlayerImpl(Customer customer, SnoozeGameManager gameManager) {
 		
 		super(customer);
 	}

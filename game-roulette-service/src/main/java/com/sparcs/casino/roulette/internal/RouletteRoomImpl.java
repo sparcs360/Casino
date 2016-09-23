@@ -27,4 +27,11 @@ public class RouletteRoomImpl extends RoomImpl implements RouletteRoom {
 
 		log.trace("Created {}", this);
 	}
+	
+	@Override
+	public String toString() {
+
+		return String.format("RouletteRoom@%x",
+				this.hashCode());
+	}
 }
