@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.function.Predicate;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +85,7 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertTrue("Bet should be accepted", player.requestSingleBet(7, 1));
+		assertTrue("Bet should be accepted", player.requestBet(RouletteBet.singleBet(1, 7)));
 
 		log.trace("-betAcceptedFromPlayerWhenBettingAllowed");
 	}
@@ -105,7 +104,7 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( currentPlayer, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertFalse("Bet should be rejected", originalPlayer.requestSingleBet(7, 1));
+		assertFalse("Bet should be rejected", originalPlayer.requestBet(RouletteBet.singleBet(1, 7)));
 
 		log.trace("-betRejectedFromNonPlayer");
 	}
@@ -122,12 +121,11 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> !p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertFalse("Bet should be rejected", player.requestSingleBet(7, 1));
+		assertFalse("Bet should be rejected", player.requestBet(RouletteBet.singleBet(1, 7)));
 
 		log.trace("-betRejectedFromPlayerWhenNotBettingAllowed");
 	}
 
-	@Ignore
 	@Test
 	public void winningSingleBetPaysOut() {
 
@@ -140,7 +138,7 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertTrue("Bet should be accepted", player.requestSingleBet(7, 1));
+		assertTrue("Bet should be accepted", player.requestBet(RouletteBet.singleBet(1, 7)));
 
 		// Wait until Croupier resolves bets
 		waitUntil( player, p -> p.areBetsResolved() );

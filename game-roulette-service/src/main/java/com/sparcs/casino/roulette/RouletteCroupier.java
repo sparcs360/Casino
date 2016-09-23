@@ -28,24 +28,23 @@ public interface RouletteCroupier extends GameManager {
 	}
 
 	/**
-	 * @return true if {@link #considerSingleBet(RoulettePlayer, int, int) betting}
+	 * @return true if {@link #considerBet(RoulettePlayer, int, int) betting}
 	 * is allowed.
 	 */
 	boolean isBettingAllowed();
 
 	/**
-	 * @return true if {@link #considerSingleBet(RoulettePlayer, int, int) bets}
+	 * @return true if {@link #considerBet(RoulettePlayer, int, int) bets}
 	 * have been resolved for the current game.
 	 */
 	boolean areBetsResolved();
 
 	/**
-	 * Consider a single number bet from a player.
+	 * Consider taking a bet from a player.
 	 * 
 	 * @param player The player requesting the bet.
-	 * @param number The number the player wishes to bet on.
-	 * @param amount The amount they wish to bet.
+	 * @param bet The type of bet being requested.
 	 * @return true if the bet was accepted.
 	 */
-	boolean considerSingleBet(RoulettePlayer player, int number, int amount);
+	boolean considerBet(RoulettePlayer player, RouletteBet bet);
 }

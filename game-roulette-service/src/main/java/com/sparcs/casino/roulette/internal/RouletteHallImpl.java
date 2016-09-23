@@ -44,4 +44,11 @@ public class RouletteHallImpl extends HallImpl implements RouletteHall {
 			this.getRooms().add(room);
 		}
 	}
+	
+	@Override
+	public String toString() {
+
+		return String.format("RouletteHall@%x",
+				this.hashCode());
+	}
 }

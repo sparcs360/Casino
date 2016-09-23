@@ -25,4 +25,11 @@ public class RouletteGameState extends GameState {
 
 		log.trace("Created {}", this);
 	}
+	
+	@Override
+	public String toString() {
+
+		return String.format("RouletteGameState@%x",
+				this.hashCode());
+	}
 }

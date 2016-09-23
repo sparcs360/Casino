@@ -1,5 +1,10 @@
 package com.sparcs.casino.roulette.internal;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -10,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.sparcs.casino.game.GameManagerImpl;
 import com.sparcs.casino.game.Room;
+import com.sparcs.casino.roulette.RouletteBet;
 import com.sparcs.casino.roulette.RouletteCroupier;
 import com.sparcs.casino.roulette.RoulettePlayer;
 import com.sparcs.casino.roulette.RouletteWheel;
@@ -37,6 +43,8 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	
 	@Autowired
 	private RouletteWheel wheel;
+	
+	private Map<RoulettePlayer, Set<RouletteBet>> currentBets;
 
 	private long nextWheelEventTime;
 	
@@ -49,9 +57,10 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	@Override
 	protected void onInitialise(Room room) {
 
-		log.trace("{}.{}: onInitialise", room, this);
+		log.trace("{}: onInitialise", this);
 
 		stage = Stage.STARTING_NEW_GAME;
+		currentBets = new HashMap<>();
 		nextWheelEventTime = getGameState().getGameTime() + WHEEL_AT_REST_DURATION;
 
 		shout("Greetings!  Feel free to watch, or take a seat and play");
@@ -60,7 +69,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	@Override
 	protected boolean onUpdate(Room room) {
 
-		log.trace("{}.{}: onUpdate", room, this);
+		log.trace("{}: onUpdate", this);
 
 		updateWheel();
 
@@ -100,6 +109,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 				case BALL_AT_REST:
 					shout("The Ball comes to rest on number {}", wheel.getResult());
 					nextWheelEventTime = getGameState().getGameTime() + WHEEL_BALL_AT_REST_DURATION;
+					resolveBets();
 					break;
 
 				case BETS_RESOLVED:
@@ -114,7 +124,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	@Override
 	protected void onShutdown(Room room) {
 
-		log.trace("{}.{}: onShutdown", room, this);
+		log.trace("{}: onShutdown", this);
 	}
 
 	@Override
@@ -130,10 +140,10 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	}
 
 	@Override
-	public boolean considerSingleBet(RoulettePlayer player, int number, int amount) {
+	public boolean considerBet(RoulettePlayer player, RouletteBet bet) {
 
-		log.trace("{}: considerSingleBet(player={}, number={}, amount={})",
-				this, player, number, amount);
+		log.trace("{}: considerBet(player={}, bet={})",
+				this, player, bet);
 
 		// Must be in a betting phase
 		if( !isBettingAllowed() ) {
@@ -149,15 +159,70 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		
 		// TODO: Player must have funds - assume infinite chips for now
 		
-		// Verify number
-		if( !RouletteWheel.canBetOnNumber(number) ) {
-			log.trace("{}: Rejecting bet (can't bet on this number)", this);
+		// Validate bet
+		if( !bet.isValid(this) ) {
+			log.trace("{}: Rejecting bet (not valid)", this);
 			return false;
 		}
 
 		// We're accepting this bet, add it to the list of bets
-		
+		Set<RouletteBet> playerBets = currentBets.get(player);
+		if( playerBets == null ) {
+			log.trace("{}: This is the first bet for {}", this, player);
+			playerBets = new HashSet<>();
+			currentBets.put(player, playerBets);
+		}
+		// TODO: Possibly merge bets?  Player may be putting more chips on an existing bet
+		playerBets.add(bet);
 		log.debug("{}: Bet accepted", this);
+		log.trace("{}: {} now has {} active bet(s)", this, player, playerBets.size());
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+
+		return String.format("RouletteCroupier@%x",
+				this.hashCode());
+	}
+
+	//---
+	
+	/**
+	 * The {@link RouletteWheel#getResult() result} is in... resolve bets.
+	 */
+	private void resolveBets() {
+
+		log.trace("{}: resolving bets", this);
+		
+		// Resolve bets
+		currentBets.keySet()
+			.stream()
+			// I'd flatMap to Bets but I want the player too (for logging) 
+			//.flatMap( player -> currentBets.get(player).stream())
+			.forEach(player -> {
+				currentBets.get(player)
+					.stream()
+					.forEach(bet -> resolveBet(player, bet));
+			});
+
+		log.trace("{}: resolved bets", this);
+
+			
+		// Remove all bets
+		// TODO: We should leave winning bets on the table
+		currentBets.clear();
+	}
+
+	/**
+	 * Resolve the given bet
+	 * 
+	 * @param bet
+	 */
+	private void resolveBet(RoulettePlayer player, RouletteBet bet) {
+
+		log.trace("{}: Resolving {}<-{}", this, player, bet);
+		
+		// TODO: Resolve bet!
 	}
 }

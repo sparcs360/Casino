@@ -72,6 +72,8 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 
 		Objects.requireNonNull(customer, "customer");
 
+		log.trace("{}: {} entered", this, customer);
+
 		// Create the GameManager if it doesn't exist
 		if( gameManager == null ) {
 			
@@ -85,6 +87,9 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	public Player joinGame(Spectator spectator) {
 
 		Objects.requireNonNull(spectator, "spectator");
+		
+		log.trace("{}: {} wants to join the game", this, spectator);
+
 		if( !spectators.contains(spectator) ) {
 			
 			throw new GameException("Only spectators can join the game"); 
@@ -98,6 +103,9 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	public Spectator leaveGame(Player player) {
 
 		Objects.requireNonNull(player, "player");
+		
+		log.trace("{}: {} wants to leave the game", this, player);
+
 		if( !gameManager.getGameState().getPlayers().contains(player) ) {
 			
 			throw new GameException("Only players can leave the game"); 
@@ -111,6 +119,9 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	public void exit(Spectator spectator) {
 
 		Objects.requireNonNull(spectator, "spectator");
+
+		log.trace("{}: {} wants to exit the room", this, spectator);
+
 		if( !spectators.contains(spectator) ) {
 			
 			throw new GameException("Only spectators can leave the room"); 
@@ -163,7 +174,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	private Spectator addSpectator(Customer customer) {
 
 		Spectator spectator = grantSpectatorRole(customer);
-		log.trace("{} was granted {}", customer.getNickName(),
+		log.trace("{} was granted {}", customer,
 				spectator.getClass().getSimpleName());
         spectators.add(spectator);
 		return spectator;
@@ -176,8 +187,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	 */
 	private void removeSpectator(Spectator spectator) {
 		
-		log.trace("{} was revoked {}", spectator.getCustomer().getNickName(),
-				spectator.getClass().getSimpleName());
+		log.trace("{} was revoked {}", spectator.getCustomer(), spectator);
 		spectators.remove(spectator);
 	}
 
@@ -191,8 +201,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		
 		Customer customer = spectator.getCustomer();
 		Player player = grantPlayerRole(customer);
-		log.trace("{} was granted {}", customer.getNickName(),
-				player.getClass().getSimpleName());
+		log.trace("{} was granted {}", customer, player);
 		gameManager.getGameState().getPlayers().add(player);
         return player;
 	}
@@ -204,8 +213,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	 */
 	private void removePlayer(Player player) {
 		
-		log.trace("{} was revoked {}", player.getCustomer().getNickName(),
-				player.getClass().getSimpleName());
+		log.trace("{} was revoked {}", player.getCustomer(), player);
 		gameManager.getGameState().getPlayers().remove(player);
 	}
 

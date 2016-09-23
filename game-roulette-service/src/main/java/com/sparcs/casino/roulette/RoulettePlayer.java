@@ -11,22 +11,21 @@ import com.sparcs.casino.game.Player;
 public interface RoulettePlayer extends Player {
 
 	/**
-	 * @return true if {@link #placeSingleBet(int) betting} is allowed
+	 * @return true if {@link #requestBet(RouletteBet) betting} is allowed
 	 */
 	boolean isBettingAllowed();
 
 	/**
-	 * @return true if {@link #placeSingleBet(int) bets} have been resolved
+	 * @return true if {@link #requestBet(RouletteBet) bets} have been resolved
 	 * for the current game.
 	 */
 	boolean areBetsResolved();
 
 	/**
-	 * Place a bet on a single number.
+	 * Attempt to place a bet on the current game.
 	 * 
-	 * @param number The number to bet on
-	 * @param amount The amount to bet
+	 * @param bet The type of bet you wish to place.
 	 * @return true is the bet was accepted.
 	 */
-	boolean requestSingleBet(int number, int amount);
+	boolean requestBet(RouletteBet bet);
 }

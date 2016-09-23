@@ -102,4 +102,11 @@ public class RouletteWheelImpl implements RouletteWheel {
 
 		result = value;
 	}
+	
+	@Override
+	public String toString() {
+
+		return String.format("RouletteWheel@%x",
+				this.hashCode());
+	}
 }
