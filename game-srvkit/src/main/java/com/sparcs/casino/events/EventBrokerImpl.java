@@ -2,8 +2,8 @@ package com.sparcs.casino.events;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -30,7 +30,7 @@ public class EventBrokerImpl implements EventBroker {
 
 	public EventBrokerImpl() {
 		
-		eventQueue = new PriorityQueue<>();
+		eventQueue = new LinkedList<>();
 		allSubscribers = new HashMap<>();
 	}
 	

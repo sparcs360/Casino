@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.sparcs.casino.game.GameManagerImpl;
 import com.sparcs.casino.game.Room;
 import com.sparcs.casino.game.Room.EnterEvent;
+import com.sparcs.casino.game.Room.ExitEvent;
 import com.sparcs.casino.testgame.SnoozeGameManager;
 
 /**
@@ -36,11 +37,21 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 
 		log.trace("{}: onInitialise", this);
 
+		// EVENT SUBSCRIPTION
+		//
+		// room.enter()
 		room.getEventBroker().subscribe(be -> {
 			
 			Room.EnterEvent e = (EnterEvent)be;
 			shout("Greetings {}!  Feel free to watch, or take a seat and play", e.getCustomer().getNickName());
 		}, Room.EnterEvent.class);
+
+		// room.exit()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.ExitEvent e = (ExitEvent)be;
+			shout("See you next time {}!", e.getSpectator().getNickName());
+		}, Room.ExitEvent.class);
 
 		endGameTime = (int) (Math.random() * 10) + 10;
 		log.debug("{}: Game over in {} ticks", this, endGameTime);

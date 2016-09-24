@@ -112,4 +112,37 @@ public interface Room {
 					getClass().getSimpleName(), hashCode(), room, customer);
 		}
 	}
+
+	/**
+	 * Represents a {@link Spectator} exiting a {@link Room}.
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class ExitEvent implements Event {
+
+		private Room room;
+		private Spectator spectator;
+		
+		public ExitEvent(Room room, Spectator spectator) {
+			
+			super();
+			this.room = room;
+			this.spectator = spectator;
+		}
+
+		public Room getRoom() {
+			return room;
+		}
+
+		public Spectator getSpectator() {
+			return spectator;
+		}
+		
+		@Override
+		public String toString() {
+
+			return String.format("%s@%x[room=%s, spectator=%s]",
+					getClass().getSimpleName(), hashCode(), room, spectator);
+		}
+	}
 }

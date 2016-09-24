@@ -145,6 +145,9 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 			throw new GameException("Only spectators can leave the room"); 
 		}
 
+		// Inform subscribers
+		broker.raiseEvent(new ExitEvent(this, spectator));
+
 		removeSpectator(spectator);
 		
 		// If no one is in the room, tidy up the game assets
@@ -188,6 +191,10 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		
 		log.trace("Destroying Game Assets");
 		
+    	// There are undispatched events if we're shutting down because the
+		// room is empty
+		broker.dispatchEvents();
+
 		gameManager.shutdown(this);
 		gameManager = null;
 	}

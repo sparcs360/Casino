@@ -87,15 +87,29 @@ public class SnoozeRoomTest extends BaseTest {
 	}
 
 	@Test
-	public void lastSpectatorToLeaveShouldResetRoom() {
+	public void lastSpectatorToExitShouldResetRoom() {
 
-		log.trace("+lastSpectatorToLeaveShouldResetRoom");
+		log.trace("+lastSpectatorToExitShouldResetRoom");
 
 		room.exit(room.enter(lee));
 
 		assertRoomIsEmpty();
 
-		log.trace("-lastSpectatorToLeaveShouldResetRoom");
+		log.trace("-lastSpectatorToExitShouldResetRoom");
+	}
+
+	@Test
+	public void notifiedWhenLastSpectatorExitsRoom() {
+
+		log.trace("+notifiedWhenLastSpectatorExitsRoom");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.ExitEvent.class);
+
+		room.exit(room.enter(lee));	// Raises and dispatches ExitRoom event (dispatches because room is empty and game is shutdown)
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenLastSpectatorExitsRoom");
 	}
 
 	//---
