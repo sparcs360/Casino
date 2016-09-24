@@ -114,16 +114,16 @@ public interface Room {
 	}
 
 	/**
-	 * Represents a {@link Spectator} exiting a {@link Room}.
+	 * Represents an {@link Event} involving a {@link Spectator} and a {@link Room}.
 	 *  
 	 * @author Lee Newfeld
 	 */
-	public static class ExitEvent implements Event {
+	public static abstract class SpectatorRoomEvent implements Event {
 
 		private Room room;
 		private Spectator spectator;
 		
-		public ExitEvent(Room room, Spectator spectator) {
+		public SpectatorRoomEvent(Room room, Spectator spectator) {
 			
 			super();
 			this.room = room;
@@ -143,6 +143,32 @@ public interface Room {
 
 			return String.format("%s@%x[room=%s, spectator=%s]",
 					getClass().getSimpleName(), hashCode(), room, spectator);
+		}
+	}
+
+	/**
+	 * Represents a {@link Spectator} joining a Game (in a {@link Room}).
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class JoinGameEvent extends SpectatorRoomEvent {
+
+		public JoinGameEvent(Room room, Spectator spectator) {
+			
+			super(room, spectator);
+		}
+	}
+
+	/**
+	 * Represents a {@link Spectator} exiting a {@link Room}.
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class ExitEvent extends SpectatorRoomEvent {
+
+		public ExitEvent(Room room, Spectator spectator) {
+			
+			super(room, spectator);
 		}
 	}
 }

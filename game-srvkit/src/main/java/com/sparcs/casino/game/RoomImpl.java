@@ -112,6 +112,9 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 			
 			throw new GameException("Only spectators can join the game"); 
 		}
+		
+		// Inform subscribers
+		broker.raiseEvent(new JoinGameEvent(this, spectator));
 
         removeSpectator(spectator);
 		return addPlayer(spectator);

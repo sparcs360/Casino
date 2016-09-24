@@ -87,6 +87,23 @@ public class SnoozeRoomTest extends BaseTest {
 	}
 
 	@Test
+	public void notifiedWhenSpectatorJoinsGame() {
+
+		log.trace("+notifiedWhenSpectatorJoinsGame");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.JoinGameEvent.class);
+
+		room.joinGame(room.enter(lee));	// Raises EnterEvent, and JoinGameEvent
+		assertEquals("Should not have recieved any events", 0, t.getTally());
+
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenSpectatorJoinsGame");
+	}
+
+	@Test
 	public void lastSpectatorToExitShouldResetRoom() {
 
 		log.trace("+lastSpectatorToExitShouldResetRoom");
