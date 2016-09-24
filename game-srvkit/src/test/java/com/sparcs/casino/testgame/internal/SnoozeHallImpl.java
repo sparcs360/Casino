@@ -41,4 +41,11 @@ public class SnoozeHallImpl extends HallImpl implements SnoozeHall {
 			this.getRooms().add(room);
 		}
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozeGameHallImpl@%x",
+				this.hashCode());
+	}
 }

@@ -53,4 +53,11 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 
 		log.trace("{}.{}: onShutdown", room, this);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozeGameManagerImpl@%x",
+				this.hashCode());
+	}
 }

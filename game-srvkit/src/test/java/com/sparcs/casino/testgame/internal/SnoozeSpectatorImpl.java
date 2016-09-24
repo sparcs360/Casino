@@ -35,4 +35,11 @@ public class SnoozeSpectatorImpl extends SpectatorImpl implements SnoozeSpectato
 
 		log.trace("Created {}", this);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozeSpectatorImpl@%x[%s]",
+				this.hashCode(), getNickName());
+	}
 }
