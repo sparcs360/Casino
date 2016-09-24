@@ -109,6 +109,19 @@ public class EventBrokerTest {
 	}
 
 	@Test
+	public void eventsAreIgnoredOnDispatchIfNoSubscribers() {
+
+		log.trace("+eventsAreIgnoredOnDispatchIfNoSubscribers");
+		
+		TestEvent event = new TestEvent("TEST");
+		eventBroker.raiseEvent(event);
+
+		eventBroker.dispatchEvents();
+
+		log.trace("-eventsAreIgnoredOnDispatchIfNoSubscribers");
+	}
+
+	@Test
 	public void subscribersShouldRecieveEvent() {
 
 		log.trace("+subscribersShouldRecieveEvent");

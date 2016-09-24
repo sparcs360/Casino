@@ -80,11 +80,18 @@ public class EventBrokerImpl implements EventBroker {
 		// TODO: Bail if too much work to do (there's always the next cycle!)
 		for( Event event = eventQueue.poll(); event != null; event = eventQueue.poll() ) {
 
-			log.trace("Event: {}", event);
-			for( Consumer<Event> subscriber : allSubscribers.get(event.getClass()) ) {
-				
-				log.trace("Dispatching to: {}", subscriber);
-				subscriber.accept(event);
+			// Get subscribers
+			Set<Consumer<Event>> subscribers = allSubscribers.get(event.getClass());
+			log.trace("Event: {} has {} subscriber(s)",
+					event, subscribers == null ? 0 : subscribers.size());
+			
+			// Dispatch
+			if( subscribers != null ) {
+				for( Consumer<Event> subscriber : subscribers ) {
+					
+					log.trace("Dispatching to: {}", subscriber);
+					subscriber.accept(event);
+				}
 			}
 		}
 
