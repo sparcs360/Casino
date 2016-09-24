@@ -2,16 +2,22 @@ package com.sparcs.casino.game;
 
 import static org.junit.Assert.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ReflectionUtils;
+
+import com.sparcs.casino.events.Event;
+import com.sparcs.casino.events.EventBroker;
+import com.sparcs.casino.events.EventBrokerImpl;
 
 /**
  * 
@@ -20,152 +26,139 @@ import org.slf4j.LoggerFactory;
 public class EventBrokerTest {
 
 	private static final Logger log = LoggerFactory.getLogger(EventBrokerTest.class);
+	
+	private static class TestEventSubscriber implements Consumer<Event> {
 
-	private interface EventBroker {
+		private List<Event> eventsRecieved;
 		
-		void subscribe(EventSubscriber subscriber, Class<? extends Event> eventClass);
-		void unsubscribe(EventSubscriber subscriber, Class<? extends Event> eventClass);
-		Set<EventSubscriber> getSubscribers(Class<? extends Event> eventClass);
-
-		void raiseEvent(Event event);
-		void dispatchEvent();
-	}
-	
-	private interface EventSubscriber {
-
-		void onEventRecieved(Event event);
-	}
-	
-	private interface Event {
-
-	}
-	
-	//---
-	
-	private static class EventBrokerImpl implements EventBroker {
-
-		private static final Logger log = LoggerFactory.getLogger(EventBrokerImpl.class);
-
-		private Queue<Event> eventQueue;
-		
-		private Map<Class<? extends Event>, Set<EventSubscriber>> allSubscribers;
-
-		public EventBrokerImpl() {
+		public TestEventSubscriber() {
 			
-			eventQueue = new PriorityQueue<>();
-			allSubscribers = new HashMap<>();
-		}
-		
-		@Override
-		public void subscribe(EventSubscriber subscriber, Class<? extends Event> eventClass) {
-
-			Set<EventSubscriber> subscribers = allSubscribers.get(eventClass);
-			if( subscribers == null ) {
-				subscribers = new HashSet<>();
-				allSubscribers.put(eventClass, subscribers);
-			}
-			subscribers.add(subscriber);
-
-			log.trace("{} subscribed to {} [count={}]", subscriber, eventClass, subscribers.size());
+			eventsRecieved = new ArrayList<>();
 		}
 
 		@Override
-		public void unsubscribe(EventSubscriber subscriber, Class<? extends Event> eventClass) {
-
-			Set<EventSubscriber> subscribers = allSubscribers.get(eventClass);
-			if( subscribers != null ) {
-				subscribers.remove(subscriber);
-				if( subscribers.isEmpty() ) {
-					allSubscribers.remove(eventClass);
-				}
-			}
-
-			log.trace("{} unsubscribed from {} [count={}]", subscriber, eventClass, subscribers.size());
-		}
-
-		@Override
-		public Set<EventSubscriber> getSubscribers(Class<? extends Event> eventClass) {
-
-			return allSubscribers.get(eventClass);
-		}
-
-		@Override
-		public void raiseEvent(Event event) {
-
-			log.trace("raiseEvent recieved {}", event);
-
-			eventQueue.add(event);
-		}
-
-		@Override
-		public void dispatchEvent() {
-
-			Event event = eventQueue.poll();
-			if( event == null ) {
-				return;
-			}
-
-			allSubscribers.get(event.getClass())
-				.stream()
-				.peek(s -> log.trace("dispatching event {} to {}", event, s))
-				.forEach(s -> s.onEventRecieved(event));
-		}
-	}
-
-	private static class TestEventSubscriber implements EventSubscriber {
-
-		private int recieveCount = 0;
-		
-		@Override
-		public void onEventRecieved(Event event) {
+		public void accept(Event event) {
 			
-			recieveCount++;
-			System.out.println(this.toString() + ": Recieved Message");
+			eventsRecieved.add(event);
+			log.debug("{} recieved {}", this, event);
 		}
 		
-		public int getRecieveCount() {
+		public List<Event> getRecievedEvents() {
 			
-			return recieveCount;
+			return eventsRecieved;
+		}
+		
+		@Override
+		public String toString() {
+			
+			return String.format("%s@%x", getClass().getSimpleName(), hashCode());
 		}
 	}
 	
-	private static class EventImpl implements Event {
+	private static class TestEvent implements Event {
 		
+		private String message;
+		
+		public TestEvent(String message) {
+			
+			this.message = message;
+		}
+
+		@Override
+		public String toString() {
+			
+			return String.format("%s@%x[%s]", getClass().getSimpleName(), hashCode(), message);
+		}
+	}
+	
+	private EventBroker eventBroker;
+	private Map<Class<? extends Event>, Set<Consumer<Event>>> allSubscribers;
+	
+	@SuppressWarnings("unchecked")
+	@Before
+	public void beforeTest() {
+		
+		eventBroker = new EventBrokerImpl();
+		
+		Field allSubscribersField = ReflectionUtils.findField(EventBrokerImpl.class, "allSubscribers");
+		assertNotNull(allSubscribersField);
+		ReflectionUtils.makeAccessible(allSubscribersField);
+		allSubscribers = (Map<Class<? extends Event>, Set<Consumer<Event>>>)ReflectionUtils.getField(allSubscribersField, eventBroker);
+		assertNotNull(allSubscribers);
+		assertNull(allSubscribers.get(TestEvent.class));
 	}
 
 	@Test
-	public void todo() {
+	public void shouldAddAndRemoveSubscribers() {
 
-		log.trace("+todo");
+		log.trace("+shouldAddAndRemoveSubscribers");
 		
-		EventBroker eventBroker = new EventBrokerImpl();
-
 		TestEventSubscriber subscriber1 = new TestEventSubscriber();
 		TestEventSubscriber subscriber2 = new TestEventSubscriber();
 
-		assertNull(eventBroker.getSubscribers(EventImpl.class));
-		eventBroker.subscribe(subscriber1, EventImpl.class);
-		assertEquals(1, eventBroker.getSubscribers(EventImpl.class).size());
-		eventBroker.unsubscribe(subscriber1, EventImpl.class);
-		assertNull(eventBroker.getSubscribers(EventImpl.class));
-		eventBroker.subscribe(subscriber1, EventImpl.class);
-		assertEquals(1, eventBroker.getSubscribers(EventImpl.class).size());
-		eventBroker.subscribe(subscriber2, EventImpl.class);
-		assertEquals(2, eventBroker.getSubscribers(EventImpl.class).size());
+		eventBroker.subscribe(subscriber1, TestEvent.class);
+		assertEquals(1, allSubscribers.get(TestEvent.class).size());
+		eventBroker.unsubscribe(subscriber1, TestEvent.class);
+		assertNull(allSubscribers.get(TestEvent.class));
+		eventBroker.subscribe(subscriber1, TestEvent.class);
+		assertEquals(1, allSubscribers.get(TestEvent.class).size());
+		eventBroker.subscribe(subscriber2, TestEvent.class);
+		assertEquals(2, allSubscribers.get(TestEvent.class).size());
 		
-		assertEquals(0, subscriber1.getRecieveCount());
-		assertEquals(0, subscriber2.getRecieveCount());
-		
-		eventBroker.raiseEvent(new EventImpl());
+		log.trace("-shouldAddAndRemoveSubscribers");
+	}
 
-		assertEquals(0, subscriber1.getRecieveCount());
-		assertEquals(0, subscriber2.getRecieveCount());
+	@Test
+	public void subscribersShouldRecieveEvent() {
+
+		log.trace("+subscribersShouldRecieveEvent");
+		
+		TestEventSubscriber subscriber1 = new TestEventSubscriber();
+		TestEventSubscriber subscriber2 = new TestEventSubscriber();
+		eventBroker.subscribe(subscriber1, TestEvent.class);
+		eventBroker.subscribe(subscriber2, TestEvent.class);
+
+		assertEquals(0, subscriber1.getRecievedEvents().size());
+		assertEquals(0, subscriber2.getRecievedEvents().size());
+
+		TestEvent event = new TestEvent("TEST");
+		eventBroker.raiseEvent(event);
+
+		assertEquals(0, subscriber1.getRecievedEvents().size());
+		assertEquals(0, subscriber2.getRecievedEvents().size());
 
 		eventBroker.dispatchEvent();
 
-		assertEquals(1, subscriber1.getRecieveCount());
-		assertEquals(1, subscriber2.getRecieveCount());
+		assertEquals(1, subscriber1.getRecievedEvents().size());
+		assertSame(event, subscriber1.getRecievedEvents().get(0));
+		assertEquals(1, subscriber2.getRecievedEvents().size());
+		assertSame(event, subscriber2.getRecievedEvents().get(0));
 
-		log.trace("-todo");
+		log.trace("-subscribersShouldRecieveEvent");
+	}
+
+	@Test
+	public void subscriberAsClosure() {
+
+		log.trace("+subscriberAsClosure");
+
+		assertNull(allSubscribers.get(TestEvent.class));
+
+		Consumer<Event> subscriber = e -> log.info("Recieved {}", e);
+		eventBroker.subscribe(subscriber, TestEvent.class);
+
+		assertEquals(1, allSubscribers.get(TestEvent.class).size());
+
+		TestEvent event = new TestEvent("TEST");
+		eventBroker.raiseEvent(event);
+		eventBroker.dispatchEvent();
+
+		eventBroker.unsubscribe(subscriber, TestEvent.class);
+
+		assertNull(allSubscribers.get(TestEvent.class));
+
+		eventBroker.shutdown();
+		
+		log.trace("-subscriberAsClosure");
 	}
 }
