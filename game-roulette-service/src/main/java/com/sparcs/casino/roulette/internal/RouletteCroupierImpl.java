@@ -76,7 +76,35 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		currentBets = new HashMap<>();
 		nextWheelEventTime = getGameState().getGameTime() + WHEEL_AT_REST_DURATION;
 
-		shout("Greetings!  Feel free to watch, or take a seat and play");
+		// EVENT SUBSCRIPTION
+		//
+		// room.enter()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.EnterEvent e = (Room.EnterEvent)be;
+			shout("Greetings {}!  Feel free to watch, or take a seat and play", e.getCustomer().getNickName());
+		}, Room.EnterEvent.class);
+
+		// room.joinGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.JoinGameEvent e = (Room.JoinGameEvent)be;
+			shout("Thanks for joining us {}!", e.getSpectator().getNickName());
+		}, Room.JoinGameEvent.class);
+
+		// room.leaveGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.LeaveGameEvent e = (Room.LeaveGameEvent)be;
+			shout("Thanks for playing {}, come back soon!", e.getPlayer().getNickName());
+		}, Room.LeaveGameEvent.class);
+
+		// room.exit()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.ExitEvent e = (Room.ExitEvent)be;
+			shout("See you next time {}!", e.getSpectator().getNickName());
+		}, Room.ExitEvent.class);
 	}
 
 	@Override

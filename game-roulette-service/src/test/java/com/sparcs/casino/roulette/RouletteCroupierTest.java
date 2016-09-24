@@ -240,8 +240,8 @@ public class RouletteCroupierTest extends BaseTest {
 
 		do {
 			
-			croupier.update(room);
-			
+			room.executeGameLoop();
+
 		} while( !condition.test(player) );
 	}
 }
