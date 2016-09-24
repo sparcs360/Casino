@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.sparcs.casino.game.GameManagerImpl;
 import com.sparcs.casino.game.Room;
+import com.sparcs.casino.game.Room.EnterEvent;
 import com.sparcs.casino.testgame.SnoozeGameManager;
 
 /**
@@ -33,17 +34,22 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 	@Override
 	protected void onInitialise(Room room) {
 
-		log.trace("{}.{}: onInitialise", room, this);
+		log.trace("{}: onInitialise", this);
+
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.EnterEvent e = (EnterEvent)be;
+			shout("Greetings {}!  Feel free to watch, or take a seat and play", e.getCustomer().getNickName());
+		}, Room.EnterEvent.class);
 
 		endGameTime = (int) (Math.random() * 10) + 10;
-
-		log.debug("{}.{}: Game over in {} ticks", room, this, endGameTime);
+		log.debug("{}: Game over in {} ticks", this, endGameTime);
 	}
 
 	@Override
 	protected boolean onUpdate(Room room) {
 
-		log.trace("{}.{}: onUpdate", room, this);
+		log.trace("{}: onUpdate", this);
 
 		return getGameState().getGameTime() < endGameTime;
 	}
@@ -51,7 +57,7 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 	@Override
 	protected void onShutdown(Room room) {
 
-		log.trace("{}.{}: onShutdown", room, this);
+		log.trace("{}: onShutdown", this);
 	}
 
 	@Override

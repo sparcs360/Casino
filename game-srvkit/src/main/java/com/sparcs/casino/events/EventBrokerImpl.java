@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
+ * Implementation of {@link EventBroker}
  * 
  * @author Lee Newfeld
  */
@@ -43,7 +44,8 @@ public class EventBrokerImpl implements EventBroker {
 		}
 		subscribers.add(subscriber);
 
-		log.trace("{} subscribed to {} [count={}]", subscriber, eventClass, subscribers.size());
+		log.trace("{} subscribed to {} [count={}]",
+				subscriber, eventClass.getCanonicalName(), subscribers.size());
 	}
 
 	@Override
@@ -58,42 +60,42 @@ public class EventBrokerImpl implements EventBroker {
 			}
 		}
 
-		log.trace("{} unsubscribed from {} [count={}]", subscriber, eventClass, subscribers.size());
+		log.trace("{} unsubscribed from {} [count={}]",
+				subscriber, eventClass.getCanonicalName(), subscribers.size());
 	}
-
-//	@Override
-//	public Set<EventSubscriber> getSubscribers(Class<? extends Event> eventClass) {
-//
-//		return allSubscribers.get(eventClass);
-//	}
 
 	@Override
 	public void raiseEvent(Event event) {
 
-		log.trace("raiseEvent recieved {}", event);
+		log.trace("Received: {}", event);
 
 		eventQueue.add(event);
 	}
 
 	@Override
-	public void dispatchEvent() {
+	public void dispatchEvents() {
 
-		Event event = eventQueue.poll();
-		if( event == null ) {
-			return;
+		log.trace("+dispatchEvents(size={})", eventQueue.size());
+
+		// TODO: Bail if too much work to do (there's always the next cycle!)
+		for( Event event = eventQueue.poll(); event != null; event = eventQueue.poll() ) {
+
+			log.trace("Event: {}", event);
+			for( Consumer<Event> subscriber : allSubscribers.get(event.getClass()) ) {
+				
+				log.trace("Dispatching to: {}", subscriber);
+				subscriber.accept(event);
+			}
 		}
 
-		allSubscribers.get(event.getClass())
-			.stream()
-			.peek(subscriber -> log.trace("dispatching event {} to {}", event, subscriber))
-			.forEach(subscriber -> subscriber.accept(event));
+		log.trace("-dispatchEvents(size={})", eventQueue.size());
 	}
 
 	@Override
 	public void shutdown() {
 
 		if( !allSubscribers.isEmpty() ) {
-			log.warn("{} shutting down with regisatered subscribers:", this);
+			log.warn("{} shutting down with unregistered subscribers:", this);
 
 			allSubscribers.entrySet()
 				.stream()

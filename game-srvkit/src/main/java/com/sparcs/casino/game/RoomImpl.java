@@ -7,10 +7,12 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import com.sparcs.casino.Customer;
+import com.sparcs.casino.events.EventBroker;
 
 /**
  * The base implementation of a {@link Room}
@@ -20,9 +22,15 @@ import com.sparcs.casino.Customer;
 public abstract class RoomImpl implements Room, ApplicationContextAware {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	protected ApplicationContext applicationContext;
-	
+
+	/**
+	 * The {@link EventBroker} handles event publish/subscribe
+	 */
+	@Autowired
+	private EventBroker broker;
+
 	/**
 	 * The {@link GameManager Game Manager} overseeing the {@link GameState}.
 	 * null if no one is in the {@link Room}.
@@ -49,6 +57,12 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 	}
 	
 	@Override
+	public EventBroker getEventBroker() {
+
+		return broker;
+	}
+
+	@Override
 	public GameManager getGameManager() {
 
 		return gameManager;
@@ -74,13 +88,17 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 
 		log.trace("{}: {} entered", this, customer);
 
-		// Create the GameManager if it doesn't exist
-		if( gameManager == null ) {
+		// Inform subscribers
+		broker.raiseEvent(new EnterEvent(this, customer));
+		
+		// Create game assets if this is the first customer through the door
+		if( isEmpty() ) {
 			
-			createGameManager();
+			createGameAssets();
 		}
 		
-		return addSpectator(customer);
+		Spectator spectator = addSpectator(customer);
+		return spectator;
 	}
 
 	@Override
@@ -129,11 +147,10 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 
 		removeSpectator(spectator);
 		
-		// Kill the GameManager if no one is in the room
+		// If no one is in the room, tidy up the game assets
 		if( isEmpty() ) {
 			
-			gameManager.shutdown(this);
-			gameManager = null;
+			destroyGameAssets();
 		}
 	}
 
@@ -149,6 +166,8 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
     		return false;
     	}
 		
+		broker.dispatchEvents();
+		
 		return gameManager.update(this);
 	}
 
@@ -157,12 +176,20 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
     /**
      * Create and initialise a {@link GameManager}.
      */
-	private void createGameManager() {
+	private void createGameAssets() {
 		
-		log.trace("Creating GameManager");
+		log.trace("Creating Game Assets");
 		
 		gameManager = (GameManager)applicationContext.getBean("GameManager");
 		gameManager.initialise(this);
+	}
+
+	private void destroyGameAssets() {
+		
+		log.trace("Destroying Game Assets");
+		
+		gameManager.shutdown(this);
+		gameManager = null;
 	}
 
 	/**

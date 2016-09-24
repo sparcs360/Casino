@@ -127,7 +127,7 @@ public class EventBrokerTest {
 		assertEquals(0, subscriber1.getRecievedEvents().size());
 		assertEquals(0, subscriber2.getRecievedEvents().size());
 
-		eventBroker.dispatchEvent();
+		eventBroker.dispatchEvents();
 
 		assertEquals(1, subscriber1.getRecievedEvents().size());
 		assertSame(event, subscriber1.getRecievedEvents().get(0));
@@ -151,7 +151,7 @@ public class EventBrokerTest {
 
 		TestEvent event = new TestEvent("TEST");
 		eventBroker.raiseEvent(event);
-		eventBroker.dispatchEvent();
+		eventBroker.dispatchEvents();
 
 		eventBroker.unsubscribe(subscriber, TestEvent.class);
 

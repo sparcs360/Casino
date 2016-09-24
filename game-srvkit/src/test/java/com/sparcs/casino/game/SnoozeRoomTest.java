@@ -9,8 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sparcs.casino.BaseTest;
-import com.sparcs.casino.game.Player;
-import com.sparcs.casino.game.Spectator;
+import com.sparcs.casino.EventTallier;
 import com.sparcs.casino.testgame.SnoozePlayer;
 import com.sparcs.casino.testgame.SnoozeSpectator;
 import com.sparcs.casino.testgame.internal.SnoozeRoomImpl;
@@ -55,6 +54,23 @@ public class SnoozeRoomTest extends BaseTest {
 		assertRoomHasOneSpectator(spectator);
 
 		log.trace("-customerCanEnterAnEmptyRoom");
+	}
+
+	@Test
+	public void notifiedWhenCustomerEntersRoom() {
+
+		log.trace("+notifiedWhenCustomerEntersRoom");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.EnterEvent.class);
+
+		room.enter(lee);	// Raises the EnterRoom event
+		assertEquals("Should not have recieved any events", 0, t.getTally());
+
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenCustomerEntersRoom");
 	}
 
 	@Test
