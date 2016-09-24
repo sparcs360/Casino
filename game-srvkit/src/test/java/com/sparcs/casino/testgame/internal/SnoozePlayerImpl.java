@@ -39,4 +39,11 @@ public class SnoozePlayerImpl extends PlayerImpl implements SnoozePlayer {
 
 		log.trace("Created {}", this);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozePlayerImpl@%x[%s]",
+				this.hashCode(), getNickName());
+	}
 }

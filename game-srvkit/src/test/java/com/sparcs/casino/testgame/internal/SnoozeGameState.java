@@ -25,4 +25,11 @@ public class SnoozeGameState extends GameState {
 
 		log.trace("Created {}", this);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozeGameState@%x",
+				this.hashCode());
+	}
 }

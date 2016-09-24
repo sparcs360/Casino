@@ -9,8 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sparcs.casino.BaseTest;
-import com.sparcs.casino.game.Player;
-import com.sparcs.casino.game.Spectator;
+import com.sparcs.casino.EventTallier;
 import com.sparcs.casino.testgame.SnoozePlayer;
 import com.sparcs.casino.testgame.SnoozeSpectator;
 import com.sparcs.casino.testgame.internal.SnoozeRoomImpl;
@@ -58,6 +57,23 @@ public class SnoozeRoomTest extends BaseTest {
 	}
 
 	@Test
+	public void notifiedWhenCustomerEntersRoom() {
+
+		log.trace("+notifiedWhenCustomerEntersRoom");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.EnterEvent.class);
+
+		room.enter(lee);	// Raises the EnterRoom event
+		assertEquals("Should not have recieved any events", 0, t.getTally());
+
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenCustomerEntersRoom");
+	}
+
+	@Test
 	public void spectatorCanJoinGame() {
 
 		log.trace("+spectatorCanJoinGame");
@@ -71,15 +87,63 @@ public class SnoozeRoomTest extends BaseTest {
 	}
 
 	@Test
-	public void lastSpectatorToLeaveShouldResetRoom() {
+	public void notifiedWhenSpectatorJoinsGame() {
 
-		log.trace("+lastSpectatorToLeaveShouldResetRoom");
+		log.trace("+notifiedWhenSpectatorJoinsGame");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.JoinGameEvent.class);
+
+		room.joinGame(room.enter(lee));	// Raises EnterEvent, and JoinGameEvent
+		assertEquals("Should not have recieved any events", 0, t.getTally());
+
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenSpectatorJoinsGame");
+	}
+
+	@Test
+	public void lastSpectatorToExitShouldResetRoom() {
+
+		log.trace("+lastSpectatorToExitShouldResetRoom");
 
 		room.exit(room.enter(lee));
 
 		assertRoomIsEmpty();
 
-		log.trace("-lastSpectatorToLeaveShouldResetRoom");
+		log.trace("-lastSpectatorToExitShouldResetRoom");
+	}
+
+	@Test
+	public void notifiedWhenLastSpectatorExitsRoom() {
+
+		log.trace("+notifiedWhenLastSpectatorExitsRoom");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.ExitEvent.class);
+
+		room.exit(room.enter(lee));	// Raises and dispatches ExitRoom event (dispatches because room is empty and game is shutdown)
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenLastSpectatorExitsRoom");
+	}
+
+	@Test
+	public void notifiedWhenPlayerLeaveGame() {
+
+		log.trace("+notifiedWhenPlayerLeaveGame");
+
+		EventTallier t = new EventTallier();
+		room.getEventBroker().subscribe(t, Room.LeaveGameEvent.class);
+
+		room.leaveGame(room.joinGame(room.enter(lee)));	// Raises EnterEvent, JoinGameEvent and LeaveGameEvent
+		assertEquals("Should not have recieved any events", 0, t.getTally());
+
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One event should have been received", 1, t.getTally());
+
+		log.trace("-notifiedWhenPlayerLeaveGame");
 	}
 
 	//---
