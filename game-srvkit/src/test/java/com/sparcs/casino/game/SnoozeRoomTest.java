@@ -2,16 +2,20 @@ package com.sparcs.casino.game;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ReflectionUtils;
 
 import com.sparcs.casino.BaseTest;
 import com.sparcs.casino.EventTallier;
 import com.sparcs.casino.testgame.SnoozePlayer;
 import com.sparcs.casino.testgame.SnoozeSpectator;
+import com.sparcs.casino.testgame.internal.SnoozeGameManagerImpl;
 import com.sparcs.casino.testgame.internal.SnoozeRoomImpl;
 
 /**
@@ -168,6 +172,10 @@ public class SnoozeRoomTest extends BaseTest {
         assertTrue("Lee should be in spectator list", room.getSpectators().contains(spectator));
         
 		assertNotNull("Room should have a game manager", room.getGameManager());
+		Field roomField = ReflectionUtils.findField(SnoozeGameManagerImpl.class, "room");
+		assertNotNull("Expecting the Room field to be called 'room' - was it renamed?", roomField);
+		ReflectionUtils.makeAccessible(roomField);
+		assertSame("Game Manager should have a reference to the room", room, ReflectionUtils.getField(roomField, room.getGameManager()));
 		assertTrue("Game should have no players", room.getGameManager().getGameState().getPlayers().isEmpty());
 		assertTrue("Game should be running", room.getGameManager().isGameRunning());
 		assertTrue("Game loop should run", room.executeGameLoop());

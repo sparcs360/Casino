@@ -24,14 +24,24 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 
 	private long endGameTime;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param room The {@link Room} that we're in
+	 */
+	public SnoozeGameManagerImpl(Room room) {
+		
+		super(room);
+	}
+
 	@PostConstruct
-	private void initialise() {
+	private void postConstruct() {
 
 		log.trace("Created {}", this);
 	}
 
 	@Override
-	protected void onInitialise(Room room) {
+	protected void onInitialise() {
 
 		log.trace("{}: onInitialise", this);
 
@@ -70,7 +80,7 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 	}
 
 	@Override
-	protected boolean onUpdate(Room room) {
+	protected boolean onUpdate() {
 
 		log.trace("{}: onUpdate", this);
 
@@ -78,7 +88,7 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 	}
 	
 	@Override
-	protected void onShutdown(Room room) {
+	protected void onShutdown() {
 
 		log.trace("{}: onShutdown", this);
 	}

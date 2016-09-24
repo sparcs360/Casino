@@ -19,23 +19,18 @@ public interface GameManager {
 
     /**
      * Reset the game back to its initial state.
-     *  
-     * @param room The {@link Room} that hosts the Game
      */
-    void initialise(Room room);
+    void initialise();
 
     /**
      * Execute a time slice of the Game
      * 
-     * @param room The {@link Room} that hosts the Game
      * @return true if the Game is still running after the update 
      */
-    boolean update(Room room);
+    boolean update();
     
     /**
      * The {@link Room#isEmpty() Room is empty}, shutdown the game
-     * 
-     * @param room The {@link Room} that hosts the Game
      */
-    void shutdown(Room room);
+    void shutdown();
 }
