@@ -177,7 +177,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		
 		broker.dispatchEvents();
 		
-		return gameManager.update(this);
+		return gameManager.update();
 	}
 
     //---
@@ -189,8 +189,8 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		
 		log.trace("Creating Game Assets");
 		
-		gameManager = (GameManager)applicationContext.getBean("GameManager");
-		gameManager.initialise(this);
+		gameManager = (GameManager)applicationContext.getBean("GameManager", this);
+		gameManager.initialise();
 	}
 
 	private void destroyGameAssets() {
@@ -201,7 +201,7 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 		// room is empty
 		broker.dispatchEvents();
 
-		gameManager.shutdown(this);
+		gameManager.shutdown();
 		gameManager = null;
 	}
 

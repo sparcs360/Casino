@@ -78,7 +78,7 @@ public class SnoozeGameManagerTest extends BaseTest {
 		gameCantBeUpdatedWhenNotRunningException.expect(GameException.class);
 		gameCantBeUpdatedWhenNotRunningException.expectMessage("Can't advance game time when game isn't running");
 
-		gameManager.update(room);
+		gameManager.update();
 
 		log.trace("-gameCantBeUpdatedWhenNotRunning");
 	}
