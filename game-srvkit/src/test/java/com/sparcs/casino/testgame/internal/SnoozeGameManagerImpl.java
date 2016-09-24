@@ -51,6 +51,13 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 			shout("Thanks for joining us {}!", e.getSpectator().getNickName());
 		}, Room.JoinGameEvent.class);
 
+		// room.leaveGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.LeaveGameEvent e = (Room.LeaveGameEvent)be;
+			shout("Thanks for playing {}, come back soon!", e.getPlayer().getNickName());
+		}, Room.LeaveGameEvent.class);
+
 		// room.exit()
 		room.getEventBroker().subscribe(be -> {
 			

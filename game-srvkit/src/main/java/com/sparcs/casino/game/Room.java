@@ -160,6 +160,39 @@ public interface Room {
 	}
 
 	/**
+	 * Represents a {@link Player} leaving a Game (in a {@link Room}).
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class LeaveGameEvent implements Event {
+
+		private Room room;
+		private Player player;
+		
+		public LeaveGameEvent(Room room, Player player) {
+			
+			super();
+			this.room = room;
+			this.player = player;
+		}
+
+		public Room getRoom() {
+			return room;
+		}
+
+		public Customer getPlayer() {
+			return player;
+		}
+		
+		@Override
+		public String toString() {
+
+			return String.format("%s@%x[room=%s, player=%s]",
+					getClass().getSimpleName(), hashCode(), room, player);
+		}
+	}
+
+	/**
 	 * Represents a {@link Spectator} exiting a {@link Room}.
 	 *  
 	 * @author Lee Newfeld

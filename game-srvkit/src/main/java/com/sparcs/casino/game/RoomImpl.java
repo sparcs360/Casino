@@ -132,7 +132,10 @@ public abstract class RoomImpl implements Room, ApplicationContextAware {
 			throw new GameException("Only players can leave the game"); 
 		}
 		
-        removePlayer(player);
+		// Inform subscribers
+		broker.raiseEvent(new LeaveGameEvent(this, player));
+
+		removePlayer(player);
         return addSpectator(player.getCustomer());
 	}
 
