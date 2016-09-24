@@ -27,4 +27,11 @@ public class SnoozeRoomImpl extends RoomImpl implements SnoozeRoom {
 
 		log.trace("Created {}", this);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozeRoomImpl@%x",
+				this.hashCode());
+	}
 }

@@ -33,17 +33,46 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 	@Override
 	protected void onInitialise(Room room) {
 
-		log.trace("{}.{}: onInitialise", room, this);
+		log.trace("{}: onInitialise", this);
+
+		// EVENT SUBSCRIPTION
+		//
+		// room.enter()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.EnterEvent e = (Room.EnterEvent)be;
+			shout("Greetings {}!  Feel free to watch, or take a seat and play", e.getCustomer().getNickName());
+		}, Room.EnterEvent.class);
+
+		// room.joinGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.JoinGameEvent e = (Room.JoinGameEvent)be;
+			shout("Thanks for joining us {}!", e.getSpectator().getNickName());
+		}, Room.JoinGameEvent.class);
+
+		// room.leaveGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.LeaveGameEvent e = (Room.LeaveGameEvent)be;
+			shout("Thanks for playing {}, come back soon!", e.getPlayer().getNickName());
+		}, Room.LeaveGameEvent.class);
+
+		// room.exit()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.ExitEvent e = (Room.ExitEvent)be;
+			shout("See you next time {}!", e.getSpectator().getNickName());
+		}, Room.ExitEvent.class);
 
 		endGameTime = (int) (Math.random() * 10) + 10;
-
-		log.debug("{}.{}: Game over in {} ticks", room, this, endGameTime);
+		log.debug("{}: Game over in {} ticks", this, endGameTime);
 	}
 
 	@Override
 	protected boolean onUpdate(Room room) {
 
-		log.trace("{}.{}: onUpdate", room, this);
+		log.trace("{}: onUpdate", this);
 
 		return getGameState().getGameTime() < endGameTime;
 	}
@@ -51,6 +80,13 @@ public class SnoozeGameManagerImpl extends GameManagerImpl implements SnoozeGame
 	@Override
 	protected void onShutdown(Room room) {
 
-		log.trace("{}.{}: onShutdown", room, this);
+		log.trace("{}: onShutdown", this);
+	}
+
+	@Override
+	public String toString() {
+
+		return String.format("SnoozeGameManagerImpl@%x",
+				this.hashCode());
 	}
 }

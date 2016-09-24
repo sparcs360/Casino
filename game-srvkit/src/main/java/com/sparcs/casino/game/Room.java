@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.sparcs.casino.Casino;
 import com.sparcs.casino.Customer;
+import com.sparcs.casino.events.Event;
+import com.sparcs.casino.events.EventBroker;
 
 /**
  * Represents a gaming room within the {@link Casino}.<br>
@@ -16,12 +18,17 @@ import com.sparcs.casino.Customer;
 public interface Room {
 
 	/**
-	 * @return The {@link GameManager manager} of the {@link GameState} inside the room.
+	 * @return The {@link EventBroker} managing events within the Room.
+	 */
+	EventBroker getEventBroker();
+
+	/**
+	 * @return The {@link GameManager manager} of the Game within the room.
 	 */
 	GameManager getGameManager();
 	
 	/**
-	 * @return The {@link Spectator}s inside the Room (i.e., watching the {@link GameState}
+	 * @return The {@link Spectator}s inside the Room (i.e., watching
 	 * rather than {@link Player playing}).
 	 */
 	List<Spectator> getSpectators();
@@ -70,4 +77,131 @@ public interface Room {
      * @return true if the game is running 
      */
 	boolean executeGameLoop();
+	
+	//---
+	
+	/**
+	 * Represents a {@link Customer} entering a {@link Room}.
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class EnterEvent implements Event {
+
+		private Room room;
+		private Customer customer;
+		
+		public EnterEvent(Room room, Customer customer) {
+			
+			super();
+			this.room = room;
+			this.customer = customer;
+		}
+
+		public Room getRoom() {
+			return room;
+		}
+
+		public Customer getCustomer() {
+			return customer;
+		}
+		
+		@Override
+		public String toString() {
+
+			return String.format("%s@%x[room=%s, customer=%s]",
+					getClass().getSimpleName(), hashCode(), room, customer);
+		}
+	}
+
+	/**
+	 * Represents an {@link Event} involving a {@link Spectator} and a {@link Room}.
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static abstract class SpectatorRoomEvent implements Event {
+
+		private Room room;
+		private Spectator spectator;
+		
+		public SpectatorRoomEvent(Room room, Spectator spectator) {
+			
+			super();
+			this.room = room;
+			this.spectator = spectator;
+		}
+
+		public Room getRoom() {
+			return room;
+		}
+
+		public Spectator getSpectator() {
+			return spectator;
+		}
+		
+		@Override
+		public String toString() {
+
+			return String.format("%s@%x[room=%s, spectator=%s]",
+					getClass().getSimpleName(), hashCode(), room, spectator);
+		}
+	}
+
+	/**
+	 * Represents a {@link Spectator} joining a Game (in a {@link Room}).
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class JoinGameEvent extends SpectatorRoomEvent {
+
+		public JoinGameEvent(Room room, Spectator spectator) {
+			
+			super(room, spectator);
+		}
+	}
+
+	/**
+	 * Represents a {@link Player} leaving a Game (in a {@link Room}).
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class LeaveGameEvent implements Event {
+
+		private Room room;
+		private Player player;
+		
+		public LeaveGameEvent(Room room, Player player) {
+			
+			super();
+			this.room = room;
+			this.player = player;
+		}
+
+		public Room getRoom() {
+			return room;
+		}
+
+		public Customer getPlayer() {
+			return player;
+		}
+		
+		@Override
+		public String toString() {
+
+			return String.format("%s@%x[room=%s, player=%s]",
+					getClass().getSimpleName(), hashCode(), room, player);
+		}
+	}
+
+	/**
+	 * Represents a {@link Spectator} exiting a {@link Room}.
+	 *  
+	 * @author Lee Newfeld
+	 */
+	public static class ExitEvent extends SpectatorRoomEvent {
+
+		public ExitEvent(Room room, Spectator spectator) {
+			
+			super(room, spectator);
+		}
+	}
 }

@@ -45,4 +45,11 @@ public class CustomerImpl implements Customer {
 
 		log.trace("{}: adding {}c, giving {}c", this, pot, chipCount);
 	}
+
+	@Override
+	public String toString() {
+
+		return String.format("CustomerImpl@%x[%s]",
+				this.hashCode(), getNickName());
+	}
 }
