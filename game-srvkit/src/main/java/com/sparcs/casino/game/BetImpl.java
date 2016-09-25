@@ -7,17 +7,25 @@ package com.sparcs.casino.game;
  */
 public abstract class BetImpl implements Bet {
 
-	protected int stake;
+	private Player player;
+	private int stake;
 	
 	/**
 	 * Constructor
 	 * @param stake Number of chips at risk.
 	 */
-	protected BetImpl(int stake) {
+	protected BetImpl(Player player, int stake) {
 		
+		this.player = player;
 		this.stake = stake;
 	}
 
+	@Override
+	public Player getPlayer() {
+
+		return player;
+	}
+	
 	@Override
 	public int getStake() {
 
