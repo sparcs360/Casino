@@ -154,4 +154,54 @@ $ git push origin develop
 
 This section describes how to make a new public release of Roulette.
 
-TODO
+Make sure:
+- All commits intended for the release are on the develop branch.
+- All tests pass.
+
+Then:
+- Create a new release branch
+- ```bash
+$ git checkout -b release-0.0.1 develop
+```
+
+- Update module version numbers in the various ```pom.xml``` files
+- Commit the updated pom.xml files
+- ```bash
+$ git commit -a -m "Bumped version number to 0.0.1-RELEASE"
+[release-0.0.1 74d9424] Bumped version number to 1.2
+1 files changed, 1 insertions(+), 1 deletions(-)
+```
+
+- Any documentation tweaks or **minior** bug fixes can be committed to the release branch.
+
+When the release is ready to ship:
+- Merge the release onto master
+- ```bash
+$ git checkout master
+Switched to branch 'master'
+$ git merge --no-ff release-0.0.1
+Merge made by recursive.
+(Summary of changes)
+```
+
+- Add a tag representing the release number
+- ```bash
+$ git tag -a 0.0.1-RELEASE
+```
+
+- Merge final changes from the release back into develop.
+
+- ```bash
+$ git checkout develop
+Switched to branch 'develop'
+$ git merge --no-ff release-0.0.1
+Merge made by recursive.
+(Summary of changes)
+```
+
+- Fix any merge conflicts
+- Delete the release branch
+- ```bash
+$ git branch -d release-0.0.1
+Deleted branch release-0.0.1 (was ff452fe).
+```
