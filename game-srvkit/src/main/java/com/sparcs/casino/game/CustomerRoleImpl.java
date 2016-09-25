@@ -42,16 +42,4 @@ public abstract class CustomerRoleImpl implements CustomerRole {
 		
 		return customer.getChipCount();
 	}
-
-	@Override
-	public void deductChips(int stake) {
-
-		customer.deductChips(stake);
-	}
-
-	@Override
-	public void addChips(int chipsWon) {
-
-		customer.addChips(chipsWon);
-	}
 }

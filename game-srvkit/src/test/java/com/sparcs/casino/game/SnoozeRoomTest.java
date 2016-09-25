@@ -53,7 +53,7 @@ public class SnoozeRoomTest extends BaseTest {
 
 		log.trace("+customerCanEnterAnEmptyRoom");
 
-		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(lee);
+		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(sparcs);
 
 		assertRoomHasOneSpectator(spectator);
 
@@ -68,7 +68,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.EnterEvent.class);
 
-		room.enter(lee);	// Raises the EnterRoom event
+		room.enter(sparcs);	// Raises the EnterRoom event
 		assertEquals("Should not have recieved any events", 0, t.getTally());
 
 		room.executeGameLoop();	// Dispatches events
@@ -82,7 +82,7 @@ public class SnoozeRoomTest extends BaseTest {
 
 		log.trace("+spectatorCanJoinGame");
 
-		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(lee);
+		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(sparcs);
 		SnoozePlayer player = (SnoozePlayer)room.joinGame(spectator);
 
 		assertRoomHasOnePlayer(player);
@@ -98,7 +98,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.JoinGameEvent.class);
 
-		room.joinGame(room.enter(lee));	// Raises EnterEvent, and JoinGameEvent
+		room.joinGame(room.enter(sparcs));	// Raises EnterEvent, and JoinGameEvent
 		assertEquals("Should not have recieved any events", 0, t.getTally());
 
 		room.executeGameLoop();	// Dispatches events
@@ -112,7 +112,7 @@ public class SnoozeRoomTest extends BaseTest {
 
 		log.trace("+lastSpectatorToExitShouldResetRoom");
 
-		room.exit(room.enter(lee));
+		room.exit(room.enter(sparcs));
 
 		assertRoomIsEmpty();
 
@@ -127,7 +127,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.ExitEvent.class);
 
-		room.exit(room.enter(lee));	// Raises and dispatches ExitRoom event (dispatches because room is empty and game is shutdown)
+		room.exit(room.enter(sparcs));	// Raises and dispatches ExitRoom event (dispatches because room is empty and game is shutdown)
 		assertEquals("One event should have been received", 1, t.getTally());
 
 		log.trace("-notifiedWhenLastSpectatorExitsRoom");
@@ -141,7 +141,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.LeaveGameEvent.class);
 
-		room.leaveGame(room.joinGame(room.enter(lee)));	// Raises EnterEvent, JoinGameEvent and LeaveGameEvent
+		room.leaveGame(room.joinGame(room.enter(sparcs)));	// Raises EnterEvent, JoinGameEvent and LeaveGameEvent
 		assertEquals("Should not have recieved any events", 0, t.getTally());
 
 		room.executeGameLoop();	// Dispatches events
@@ -164,7 +164,7 @@ public class SnoozeRoomTest extends BaseTest {
 	private void assertRoomHasOneSpectator(Spectator spectator) {
 		
 		assertNotNull("Spectator should have been returned from RoomImpl.enter()", spectator);
-        assertSame("Spectator role should apply to Lee", lee, spectator.getCustomer());
+        assertSame("Spectator role should apply to Lee", sparcs, spectator.getCustomer());
 
 		assertFalse("Room shouldn't be empty", room.isEmpty());
 		
@@ -184,7 +184,7 @@ public class SnoozeRoomTest extends BaseTest {
 	private void assertRoomHasOnePlayer(Player player) {
 		
 		assertNotNull("Player should have been returned from RoomImpl.joinGame()", player);
-		assertSame("Player role should apply to Lee", lee, player.getCustomer());
+		assertSame("Player role should apply to Lee", sparcs, player.getCustomer());
 
 		assertFalse("Room shouldn't be empty", room.isEmpty());
 		

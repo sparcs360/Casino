@@ -5,17 +5,16 @@ import org.slf4j.LoggerFactory;
 
 public class CustomerImpl implements Customer {
 
+	@SuppressWarnings("unused")
 	private static final Logger log = LoggerFactory.getLogger(CustomerImpl.class);
 
 	private String nickName;
-	private int chipCount;
 
-	public CustomerImpl(String nickName, int chipCount) {
+	public CustomerImpl(String nickName) {
 		
 		super();
 		
 		this.nickName = nickName;
-		this.chipCount = chipCount;
 	}
 
 	@Override
@@ -27,25 +26,9 @@ public class CustomerImpl implements Customer {
 	@Override
 	public int getChipCount() {
 
-		return chipCount;
+		return Bank.ACCOUNTS.get(this).getChipCount();
 	}
-
-	@Override
-	public void deductChips(int stake) {
-
-		chipCount -= stake;
-		
-		log.trace("{}: deducted {}c, leaving {}c", this, stake, chipCount);
-	}
-
-	@Override
-	public void addChips(int pot) {
-
-		chipCount += pot;
-
-		log.trace("{}: adding {}c, giving {}c", this, pot, chipCount);
-	}
-
+	
 	@Override
 	public String toString() {
 
