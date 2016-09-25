@@ -13,9 +13,21 @@ public abstract class GameManagerImpl implements GameManager {
 
 	private static final Logger log = LoggerFactory.getLogger(GameManagerImpl.class);
 
+	protected Room room;
+	
 	@Autowired
 	private GameState state;
 
+	/**
+	 * Construction
+	 * 
+	 * @param room The {@link Room} we're in.
+	 */
+	protected GameManagerImpl(Room room) {
+		
+		this.room = room;
+	}
+	
 	@Override
 	public boolean isGameRunning() {
 
@@ -29,49 +41,44 @@ public abstract class GameManagerImpl implements GameManager {
 	}
 
 	@Override
-	public void initialise(Room room) {
+	public void initialise() {
 
 		state.resetTime();
 		
-		onInitialise(room);
+		onInitialise();
 	}
 
 	@Override
-	public boolean update(Room room) {
+	public boolean update() {
 
 		state.advanceTime();
 		log.trace("{}: gameTime={}", this, state.getGameTime());
 		
-		return onUpdate(room);
+		return onUpdate();
 	}
 
 	@Override
-	public void shutdown(Room room) {
+	public void shutdown() {
 		
-		onShutdown(room);
+		onShutdown();
 	}
 
 	/**
 	 * Reset the game state to the point prior to game start
-	 *  
-	 * @param room
 	 */
-	protected void onInitialise(Room room) {};
+	protected void onInitialise() {};
 
 	/**
 	 * Execute a slice of game time
 	 *  
-	 * @param room
 	 * @return true if the game is running
 	 */
-	protected abstract boolean onUpdate(Room room);
+	protected abstract boolean onUpdate();
 	
 	/**
 	 * The game is about to be packed away - tidy up!
-	 * 
-	 * @param room
 	 */
-	protected void onShutdown(Room room) {};
+	protected void onShutdown() {};
 	
 	/**
 	 * Send a message that everyone in the Room can hear

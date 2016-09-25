@@ -9,6 +9,11 @@ package com.sparcs.casino.game;
 public interface Bet {
 
 	/**
+	 * @return The {@link Player} who placed the Bet.
+	 */
+	Player getPlayer();
+	
+	/**
 	 * @return The number of chips at risk.
 	 */
 	int getStake();

@@ -46,7 +46,9 @@ public class VisitToTheCasinoTest extends BaseTest {
 	public void shouldHaveAnEnjoyableTime() {
 
         // Lee enters the Casino
-        Customer customer = casino.signIn("Lee", "abc");
+        Customer customer = casino.signIn("SPARCS", "abc");
+        assertNotNull(customer);
+        assertEquals("Should be SPARCS", sparcs, customer);
         
         // He wants to play Roulette, where's the action?
         List<Room> rooms = casino.findRooms(customer, GameType.ROULETTE);
@@ -60,7 +62,7 @@ public class VisitToTheCasinoTest extends BaseTest {
         RouletteRoom room = (RouletteRoom)firstEmptyRoom.get();
 
         // Go inside...
-        Spectator spectator = room.enter(lee);
+        Spectator spectator = room.enter(sparcs);
         
         // Meet the Croupier...
         @SuppressWarnings("unused")

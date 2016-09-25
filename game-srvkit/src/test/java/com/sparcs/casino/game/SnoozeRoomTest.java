@@ -2,16 +2,20 @@ package com.sparcs.casino.game;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ReflectionUtils;
 
 import com.sparcs.casino.BaseTest;
 import com.sparcs.casino.EventTallier;
 import com.sparcs.casino.testgame.SnoozePlayer;
 import com.sparcs.casino.testgame.SnoozeSpectator;
+import com.sparcs.casino.testgame.internal.SnoozeGameManagerImpl;
 import com.sparcs.casino.testgame.internal.SnoozeRoomImpl;
 
 /**
@@ -49,7 +53,7 @@ public class SnoozeRoomTest extends BaseTest {
 
 		log.trace("+customerCanEnterAnEmptyRoom");
 
-		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(lee);
+		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(sparcs);
 
 		assertRoomHasOneSpectator(spectator);
 
@@ -64,7 +68,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.EnterEvent.class);
 
-		room.enter(lee);	// Raises the EnterRoom event
+		room.enter(sparcs);	// Raises the EnterRoom event
 		assertEquals("Should not have recieved any events", 0, t.getTally());
 
 		room.executeGameLoop();	// Dispatches events
@@ -78,7 +82,7 @@ public class SnoozeRoomTest extends BaseTest {
 
 		log.trace("+spectatorCanJoinGame");
 
-		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(lee);
+		SnoozeSpectator spectator = (SnoozeSpectator)room.enter(sparcs);
 		SnoozePlayer player = (SnoozePlayer)room.joinGame(spectator);
 
 		assertRoomHasOnePlayer(player);
@@ -94,7 +98,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.JoinGameEvent.class);
 
-		room.joinGame(room.enter(lee));	// Raises EnterEvent, and JoinGameEvent
+		room.joinGame(room.enter(sparcs));	// Raises EnterEvent, and JoinGameEvent
 		assertEquals("Should not have recieved any events", 0, t.getTally());
 
 		room.executeGameLoop();	// Dispatches events
@@ -108,7 +112,7 @@ public class SnoozeRoomTest extends BaseTest {
 
 		log.trace("+lastSpectatorToExitShouldResetRoom");
 
-		room.exit(room.enter(lee));
+		room.exit(room.enter(sparcs));
 
 		assertRoomIsEmpty();
 
@@ -123,7 +127,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.ExitEvent.class);
 
-		room.exit(room.enter(lee));	// Raises and dispatches ExitRoom event (dispatches because room is empty and game is shutdown)
+		room.exit(room.enter(sparcs));	// Raises and dispatches ExitRoom event (dispatches because room is empty and game is shutdown)
 		assertEquals("One event should have been received", 1, t.getTally());
 
 		log.trace("-notifiedWhenLastSpectatorExitsRoom");
@@ -137,7 +141,7 @@ public class SnoozeRoomTest extends BaseTest {
 		EventTallier t = new EventTallier();
 		room.getEventBroker().subscribe(t, Room.LeaveGameEvent.class);
 
-		room.leaveGame(room.joinGame(room.enter(lee)));	// Raises EnterEvent, JoinGameEvent and LeaveGameEvent
+		room.leaveGame(room.joinGame(room.enter(sparcs)));	// Raises EnterEvent, JoinGameEvent and LeaveGameEvent
 		assertEquals("Should not have recieved any events", 0, t.getTally());
 
 		room.executeGameLoop();	// Dispatches events
@@ -160,7 +164,7 @@ public class SnoozeRoomTest extends BaseTest {
 	private void assertRoomHasOneSpectator(Spectator spectator) {
 		
 		assertNotNull("Spectator should have been returned from RoomImpl.enter()", spectator);
-        assertSame("Spectator role should apply to Lee", lee, spectator.getCustomer());
+        assertSame("Spectator role should apply to Lee", sparcs, spectator.getCustomer());
 
 		assertFalse("Room shouldn't be empty", room.isEmpty());
 		
@@ -168,6 +172,10 @@ public class SnoozeRoomTest extends BaseTest {
         assertTrue("Lee should be in spectator list", room.getSpectators().contains(spectator));
         
 		assertNotNull("Room should have a game manager", room.getGameManager());
+		Field roomField = ReflectionUtils.findField(SnoozeGameManagerImpl.class, "room");
+		assertNotNull("Expecting the Room field to be called 'room' - was it renamed?", roomField);
+		ReflectionUtils.makeAccessible(roomField);
+		assertSame("Game Manager should have a reference to the room", room, ReflectionUtils.getField(roomField, room.getGameManager()));
 		assertTrue("Game should have no players", room.getGameManager().getGameState().getPlayers().isEmpty());
 		assertTrue("Game should be running", room.getGameManager().isGameRunning());
 		assertTrue("Game loop should run", room.executeGameLoop());
@@ -176,7 +184,7 @@ public class SnoozeRoomTest extends BaseTest {
 	private void assertRoomHasOnePlayer(Player player) {
 		
 		assertNotNull("Player should have been returned from RoomImpl.joinGame()", player);
-		assertSame("Player role should apply to Lee", lee, player.getCustomer());
+		assertSame("Player role should apply to Lee", sparcs, player.getCustomer());
 
 		assertFalse("Room shouldn't be empty", room.isEmpty());
 		

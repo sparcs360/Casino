@@ -46,9 +46,9 @@ public interface RouletteBet extends Bet {
 		 * @param stake Number of chips at risk.
 		 * @param number The number to bet on.
 		 */
-		private SingleBet(int stake, int number) {
+		private SingleBet(RoulettePlayer player, int stake, int number) {
 			
-			super(stake);
+			super(player, stake);
 			this.number = number;
 		}
 		
@@ -71,14 +71,14 @@ public interface RouletteBet extends Bet {
 		@Override
 		public int calculateWinnings(int result) {
 
-			return number==result ? stake*36 : 0;
+			return number==result ? getStake()*36 : 0;
 		}
 
 		@Override
 		public String toString() {
 
 			return String.format("SingleBet@%x[%dc on #%d]",
-					this.hashCode(), stake, number);
+					this.hashCode(), getStake(), number);
 		}
 	}
 
@@ -89,8 +89,8 @@ public interface RouletteBet extends Bet {
 	 * @param number The number to bet on.
 	 * @return The bet.
 	 */
-	static SingleBet singleBet(int stake, int number) {
+	static SingleBet singleBet(RoulettePlayer player, int stake, int number) {
 
-		return new SingleBet(stake, number);
+		return new SingleBet(player, stake, number);
 	}
 }
