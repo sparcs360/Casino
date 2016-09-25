@@ -1,14 +1,11 @@
 # Game Framework
 
+A framework for creating games within the [Casino](Other Domains - Class Model.md).
+
 ## Interfaces
 
 | Name                             | Description                                                      |
 |----------------------------------|------------------------------------------------------------------|
-| **Casino**                       | A venue where **Customer**s go to play games!                    |
-| **Bank**                         | The owner of all **Account**s                                    |
-| **Customer**                     | A patron of the **Casino**                                       |
-| **Account**                      | A record of a **Customer**'s changing chip count (as a result of placing **Bet**) |
-| **CustomerRole**                 | A function performed by a **Customer** in a particular situation |
 | **Spectator** (a *CustomerRole*) | A **Customer** watching a Game                                   |
 | **Player** (a *CustomerRole*)    | A **Customer** playing a Game                                    |
 | **Hall**                         | Represents a set of **Room**s hosting a particular type of Game  |
@@ -21,34 +18,62 @@
 
 ## Class Model
 
-![yuml](http://yuml.me/9f106769)
+![yuml](http://yuml.me/19a74cb0)
 
 ### [yuml](http://yuml.me/diagram/scruffy/class/draw) script
 
 ```
-[Casino|signIn();findRooms();signOut()]++1-visitors\n0..*>[Customer|getNickName();getChipCount()]
+// Other Domain Entities (shaded in orange)
+[Casino{bg:sandybrown}]
+[Customer{bg:sandybrown}]
+[Bank{bg:sandybrown}]
+[Account{bg:sandybrown}]
+[CustomerRole{bg:sandybrown}]
+
+// Other Domain Associations
+[Casino]++1-visitors\n0..*>[Customer]
 [Casino]++1-bank\n1>[Bank]
-[Customer]^-[CustomerRole|getCustomer()]
+[Bank]++1-accounts\n0..*>[Account]
+[Account]<>1-1>[Customer]
 [CustomerRole]<>-1>[Customer]
+
+//==========
+
+// Entities
+[Hall|executeGameLoops()]
+[Room|isEmpty();enter();joinGame();leaveGame();exit();executeGameLoop()]
+[Spectator]
+[EventBroker|subscribe();unsubscribe();raiseEvent();dispatchEvents()]
+[Event]
+[Room.EnterEvent|room:Room;customer:Customer]
+[Room.SpectatorEvent|room:Room;spectator:Spectator]
+[Room.JoinGameEvent]
+[Room.LeaveGameEvent|room:Room;player:Player]
+[Room.ExitEvent]
+[GameManager|isGameRunning();initialise();update();shutdown()]
+[GameState]
+[Player]
+[Bet]
+
+// Inheritance
+[Customer]^-[CustomerRole{bg:sandybrown}]
 [CustomerRole]^-[Spectator]
 [CustomerRole]^-[Player]
-[Account|getChipCount();addChips();deductChips()]<>1-1>[Customer]
-[Bank]++1-accounts\n0..*>[Account]
+[Event]^-[Room.EnterEvent]
+[Event]^-[Room.SpectatorEvent]
+[Event]^-[Room.LeaveGameEvent]
+[Room.SpectatorEvent]^-[Room.JoinGameEvent]
+[Room.SpectatorEvent]^-[Room.ExitEvent]
 
-// Game Domain
-[Casino]++1-halls\n0..*>[Hall|executeGameLoops()]
-
-[Hall]++1-rooms\n0..*>[Room|isEmpty();enter();joinGame();leaveGame();exit();executeGameLoop()]
-
+// Associations
+[Casino{bg:sandybrown}]++1-halls\n0..*>[Hall]
+[Hall]++1-rooms\n0..*>[Room]
 [Room]<>1-spectators\n0..*>[Spectator]
-[Room]++1-broker\n1>[EventBroker|subscribe();unsubscribe();raiseEvent();postEvent();dispatchEvents()]
-[Room]++room\n1-gameManager\n1>[GameManager|isGameRunning();initialise();update();shutdown()]
-
+[Room]++1-broker\n1>[EventBroker]
+[Room]++room\n1-gameManager\n1>[GameManager]
 [EventBroker]-[Event]
-
-[Player]<>1-bets\n0..*>[Bet]
-
 [GameManager]++1-currentBets\n0..*>[Bet]
+[Player]<>1-bets\n0..*>[Bet]
 [GameManager]++1-state\n1>[GameState]
 [GameState]<>1-players\n0..*>[Player]
 ```
