@@ -73,7 +73,7 @@ public class RouletteCroupierTest extends BaseTest {
 		// Spectator stays for a while...
 		for( int i=0; i<50; i++ ) {
 			
-			assertTrue("Game should never end", croupier.update(room) );
+			assertTrue("Game should never end", croupier.update() );
 		}
 
 		log.trace("-gameShouldRunWhenSpectatorEntersRoom");
@@ -90,7 +90,7 @@ public class RouletteCroupierTest extends BaseTest {
 		// Spectator stays for a while...
 		for( int i=0; i<50; i++ ) {
 			
-			assertTrue("Game should never end", croupier.update(room) );
+			assertTrue("Game should never end", croupier.update() );
 		}
 
 		log.trace("-gameShouldRunWhenPlayerMakesNoBets");
@@ -239,7 +239,7 @@ public class RouletteCroupierTest extends BaseTest {
 	private void waitUntil(RoulettePlayer player, Predicate<RoulettePlayer> condition) {
 
 		do {
-			
+
 			room.executeGameLoop();
 
 		} while( !condition.test(player) );

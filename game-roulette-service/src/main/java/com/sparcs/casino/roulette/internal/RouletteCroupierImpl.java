@@ -44,6 +44,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 
 	private Stage stage;
 	
+	@Autowired
 	private RouletteWheel wheel;
 	
 	private Map<RoulettePlayer, List<RouletteBet>> currentBets;
@@ -55,20 +56,19 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	 * 
 	 * @param wheel The installed Wheel 
 	 */
-	@Autowired
-	public RouletteCroupierImpl(RouletteWheel wheel) {
-
-		this.wheel = wheel;
+	public RouletteCroupierImpl(Room room) {
+		
+		super(room);
 	}
 	
 	@PostConstruct
-	private void initialise() {
+	private void postConstruct() {
 
 		log.trace("Created {}", this);
 	}
 
 	@Override
-	protected void onInitialise(Room room) {
+	protected void onInitialise() {
 
 		log.trace("{}: onInitialise", this);
 
@@ -108,7 +108,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	}
 
 	@Override
-	protected boolean onUpdate(Room room) {
+	protected boolean onUpdate() {
 
 		log.trace("{}: onUpdate", this);
 
@@ -173,7 +173,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	}
 
 	@Override
-	protected void onShutdown(Room room) {
+	protected void onShutdown() {
 
 		log.trace("{}: onShutdown", this);
 	}
@@ -248,7 +248,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		try {
 			
 			log.debug("{}: Bet accepted", this);
-			player.deductChips(bet.getStake());
+			//player.deductChips(bet.getStake());
 			playerBets.add(bet);
 			log.trace("{}: {} now has {} active bet(s)", this, player, playerBets.size());
 
@@ -317,6 +317,6 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		}
 
 		shout("{} has won {}c with their bet of {}", player, winnings, bet);
-		player.addChips(winnings);
+		//player.addChips(winnings);
 	}
 }
