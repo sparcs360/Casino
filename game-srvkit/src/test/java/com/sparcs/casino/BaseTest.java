@@ -80,18 +80,25 @@ public abstract class BaseTest /*extends AbstractTransactionalJUnit4SpringContex
 	@Mock
 	protected Casino casino;
 
-	protected Customer lee;
+	protected Customer sparcs;
 
     @Before
     public void beforeTest() {
     	
         MockitoAnnotations.initMocks(this);
-        
+
+        // Create some Customers/Account for testing purposes
+        // Not using Mocks here because we need a chipCount that changes
+        // in response to Bets being placed/won
+        sparcs = new CustomerImpl("SPARCS");
+		AccountImpl leesAccount = new AccountImpl(sparcs, 100);
+		Casino.CUSTOMERS.put(sparcs.getNickName(), sparcs);
+		Bank.ACCOUNTS.put(sparcs, leesAccount);
+
         // Create mocks for other Domain entities
         casino = Mockito.mock(Casino.class);
-        lee = new CustomerImpl("SPARCS", 100);
-
-        // Add mock functionality
-        when(casino.signIn(eq("Lee"), anyString())).thenReturn(lee);
+        when(casino.signIn(anyString(), anyString())).thenAnswer(
+       		invocation -> Casino.CUSTOMERS.get(invocation.getArgumentAt(0, String.class))
+        );
     }
 }

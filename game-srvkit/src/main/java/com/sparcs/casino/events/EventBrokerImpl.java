@@ -8,6 +8,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -32,6 +34,12 @@ public class EventBrokerImpl implements EventBroker {
 		
 		eventQueue = new LinkedList<>();
 		allSubscribers = new HashMap<>();
+	}
+	
+	@PostConstruct
+	private void postConstruct() {
+
+		log.trace("Created {}", this);
 	}
 	
 	@Override
@@ -113,6 +121,8 @@ public class EventBrokerImpl implements EventBroker {
 	@Override
 	public String toString() {
 		
-		return String.format("%s@%x", getClass().getSimpleName(), hashCode());
+		return String.format("%s@%x[subscriberCount=%d, queueLength=%d]",
+				getClass().getSimpleName(), hashCode(),
+				allSubscribers.size(), eventQueue.size());
 	}
 }

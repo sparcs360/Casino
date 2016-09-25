@@ -1,6 +1,8 @@
 package com.sparcs.casino;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.sparcs.casino.game.GameType;
 import com.sparcs.casino.game.Room;
@@ -11,6 +13,11 @@ import com.sparcs.casino.game.Room;
  * @author Lee Newfeld
  */
 public interface Casino {
+
+	/**
+	 * REPRESENTS A BACK-END DATA STORE - ACCESSIBLE VIA AN API
+	 */
+	public final static Map<String, Customer> CUSTOMERS = new HashMap<>();
 
 	/**
 	 * A {@link Customer} must sign into the Casino, by providing their
