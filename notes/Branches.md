@@ -189,6 +189,11 @@ Merge made by recursive.
 $ git tag -a 0.0.1-RELEASE
 ```
 
+- Push release to Github
+- ```bash
+$ git push origin master
+```
+
 - Merge final changes from the release back into develop.
 
 - ```bash
