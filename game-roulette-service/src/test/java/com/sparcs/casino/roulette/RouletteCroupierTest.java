@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ReflectionUtils;
 
 import com.sparcs.casino.BaseTest;
+import com.sparcs.casino.EventTallier;
 import com.sparcs.casino.roulette.RouletteBet.SingleBet;
 import com.sparcs.casino.roulette.internal.RouletteCroupierImpl;
 import com.sparcs.casino.roulette.internal.RouletteRoomImpl;
@@ -52,7 +53,7 @@ public class RouletteCroupierTest extends BaseTest {
 		assertEquals(7, riggedWheel.getResult());
 
 		// Spectator enters the room
-		spectator = (RouletteSpectator)room.enter(lee);
+		spectator = (RouletteSpectator)room.enter(sparcs);
 		croupier = (RouletteCroupierImpl)room.getGameManager();
 		
 		// Replace real wheel with rigged wheel
@@ -73,7 +74,7 @@ public class RouletteCroupierTest extends BaseTest {
 		// Spectator stays for a while...
 		for( int i=0; i<50; i++ ) {
 			
-			assertTrue("Game should never end", croupier.update(room) );
+			assertTrue("Game should never end", croupier.update() );
 		}
 
 		log.trace("-gameShouldRunWhenSpectatorEntersRoom");
@@ -90,7 +91,7 @@ public class RouletteCroupierTest extends BaseTest {
 		// Spectator stays for a while...
 		for( int i=0; i<50; i++ ) {
 			
-			assertTrue("Game should never end", croupier.update(room) );
+			assertTrue("Game should never end", croupier.update() );
 		}
 
 		log.trace("-gameShouldRunWhenPlayerMakesNoBets");
@@ -110,8 +111,16 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1 chip on lucky 7!
 		int chipsBefore = player.getChipCount();
-		SingleBet bet = RouletteBet.singleBet(1, 7);
-		assertTrue("Bet should be accepted", player.requestBet(bet));
+		SingleBet bet = RouletteBet.singleBet(player, 1, 7);
+		
+		EventTallier tallyOfBetPlacedEvents = new EventTallier();
+		room.getEventBroker().subscribe(tallyOfBetPlacedEvents, RouletteCroupier.BetPlacedEvent.class);
+
+		player.requestBet(bet);
+		
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One BetPlacedEvent should have been received", 1, tallyOfBetPlacedEvents.getTally());
+		
 		assertEquals("Player should have 1 active bet", 1, player.getBets().size());
 		assertTrue("The only bet should be the one just placed", player.getBets().contains(bet));
 		assertEquals("Player should have one less chip", chipsBefore - 1, player.getChipCount());
@@ -132,8 +141,16 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1M chip on lucky 7!
 		int chipsBefore = player.getChipCount();
-		SingleBet bet = RouletteBet.singleBet(1000000, 7);
-		assertFalse("Bet should be rejected", player.requestBet(bet));
+		SingleBet bet = RouletteBet.singleBet(player, 1000000, 7);
+		
+		EventTallier tallyOfBetRejectedEvent = new EventTallier();
+		room.getEventBroker().subscribe(tallyOfBetRejectedEvent, RouletteCroupier.BetRejectedEvent.class);
+
+		player.requestBet(bet);
+		
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One BetRejectedEvent should have been received", 1, tallyOfBetRejectedEvent.getTally());
+		
 		assertEquals("Player should have no active bet", 0, player.getBets().size());
 		assertEquals("Player should have same number of chip as before", chipsBefore, player.getChipCount());
 
@@ -155,8 +172,16 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1 chip on lucky 7!
 		int chipsBefore = currentPlayer.getChipCount();
-		SingleBet bet = RouletteBet.singleBet(1, 7);
-		assertFalse("Bet should be rejected", originalPlayer.requestBet(bet));
+		SingleBet bet = RouletteBet.singleBet(originalPlayer, 1, 7);
+		
+		EventTallier tallyOfBetRejectedEvent = new EventTallier();
+		room.getEventBroker().subscribe(tallyOfBetRejectedEvent, RouletteCroupier.BetRejectedEvent.class);
+
+		originalPlayer.requestBet(bet);
+		
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One BetRejectedEvent should have been received", 1, tallyOfBetRejectedEvent.getTally());
+		
 		assertEquals("Original Player should have no active bet", 0, originalPlayer.getBets().size());
 		assertEquals("Current Player should have no active bet", 0, currentPlayer.getBets().size());
 		assertEquals("Current Player should have same number of chips", chipsBefore, currentPlayer.getChipCount());
@@ -176,7 +201,13 @@ public class RouletteCroupierTest extends BaseTest {
 		waitUntil( player, p -> !p.isBettingAllowed() );
 
 		// Put 1 chip on lucky 7!
-		assertFalse("Bet should be rejected", player.requestBet(RouletteBet.singleBet(1, 7)));
+		EventTallier tallyOfBetRejectedEvent = new EventTallier();
+		room.getEventBroker().subscribe(tallyOfBetRejectedEvent, RouletteCroupier.BetRejectedEvent.class);
+
+		player.requestBet(RouletteBet.singleBet(player, 1, 7));
+		
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One BetRejectedEvent should have been received", 1, tallyOfBetRejectedEvent.getTally());
 
 		log.trace("-betRejectedFromPlayerWhenBettingNotAllowed");
 	}
@@ -194,12 +225,20 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1 chip on lucky 7!
 		int chipsBefore = player.getChipCount();
-		SingleBet bet = RouletteBet.singleBet(1, 7);
-		assertTrue("Bet should be accepted", player.requestBet(bet));
+		SingleBet bet = RouletteBet.singleBet(player, 1, 7);
+
+		EventTallier tallyOfBetWinEvent = new EventTallier();
+		room.getEventBroker().subscribe(tallyOfBetWinEvent, RouletteCroupier.BetWinEvent.class);
+
+		player.requestBet(bet);
+		
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One BetWinEvent should have been received", 0, tallyOfBetWinEvent.getTally());
 
 		// Wait until Croupier resolves bets
 		waitUntil( player, p -> p.areBetsResolved() );
 
+		assertEquals("One BetWinEvent should have been received", 1, tallyOfBetWinEvent.getTally());
 		assertEquals("Winnings should be added", chipsBefore + 35, player.getChipCount());
 		assertEquals("Player should have no active bet", 0, player.getBets().size());
 
@@ -219,12 +258,20 @@ public class RouletteCroupierTest extends BaseTest {
 
 		// Put 1 chip on #1 (surely it can't be a 7 again?)
 		int chipsBefore = player.getChipCount();
-		SingleBet bet = RouletteBet.singleBet(1, 1);
-		assertTrue("Bet should be accepted", player.requestBet(bet));
+		SingleBet bet = RouletteBet.singleBet(player, 1, 1);
+
+		EventTallier tallyOfBetWinEvent = new EventTallier();
+		room.getEventBroker().subscribe(tallyOfBetWinEvent, RouletteCroupier.BetWinEvent.class);
+
+		player.requestBet(bet);
+		
+		room.executeGameLoop();	// Dispatches events
+		assertEquals("One BetWinEvent should have been received", 0, tallyOfBetWinEvent.getTally());
 
 		// Wait until Croupier resolves bets
 		waitUntil( player, p -> p.areBetsResolved() );
 
+		assertEquals("One BetWinEvent should have been received", 0, tallyOfBetWinEvent.getTally());
 		assertEquals("Should have one less chip", chipsBefore - 1, player.getChipCount());
 
 		log.trace("-loosingBetDoesntPayOut");
@@ -239,9 +286,9 @@ public class RouletteCroupierTest extends BaseTest {
 	private void waitUntil(RoulettePlayer player, Predicate<RoulettePlayer> condition) {
 
 		do {
-			
-			croupier.update(room);
-			
+
+			room.executeGameLoop();
+
 		} while( !condition.test(player) );
 	}
 }

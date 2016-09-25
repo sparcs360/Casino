@@ -44,6 +44,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 
 	private Stage stage;
 	
+	@Autowired
 	private RouletteWheel wheel;
 	
 	private Map<RoulettePlayer, List<RouletteBet>> currentBets;
@@ -55,20 +56,19 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	 * 
 	 * @param wheel The installed Wheel 
 	 */
-	@Autowired
-	public RouletteCroupierImpl(RouletteWheel wheel) {
-
-		this.wheel = wheel;
+	public RouletteCroupierImpl(Room room) {
+		
+		super(room);
 	}
 	
 	@PostConstruct
-	private void initialise() {
+	private void postConstruct() {
 
 		log.trace("Created {}", this);
 	}
 
 	@Override
-	protected void onInitialise(Room room) {
+	protected void onInitialise() {
 
 		log.trace("{}: onInitialise", this);
 
@@ -76,11 +76,39 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		currentBets = new HashMap<>();
 		nextWheelEventTime = getGameState().getGameTime() + WHEEL_AT_REST_DURATION;
 
-		shout("Greetings!  Feel free to watch, or take a seat and play");
+		// EVENT SUBSCRIPTION
+		//
+		// room.enter()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.EnterEvent e = (Room.EnterEvent)be;
+			shout("Greetings {}!  Feel free to watch, or take a seat and play", e.getCustomer().getNickName());
+		}, Room.EnterEvent.class);
+
+		// room.joinGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.JoinGameEvent e = (Room.JoinGameEvent)be;
+			shout("Thanks for joining us {}!", e.getSpectator().getNickName());
+		}, Room.JoinGameEvent.class);
+
+		// room.leaveGame()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.LeaveGameEvent e = (Room.LeaveGameEvent)be;
+			shout("Thanks for playing {}, come back soon!", e.getPlayer().getNickName());
+		}, Room.LeaveGameEvent.class);
+
+		// room.exit()
+		room.getEventBroker().subscribe(be -> {
+			
+			Room.ExitEvent e = (Room.ExitEvent)be;
+			shout("See you next time {}!", e.getSpectator().getNickName());
+		}, Room.ExitEvent.class);
 	}
 
 	@Override
-	protected boolean onUpdate(Room room) {
+	protected boolean onUpdate() {
 
 		log.trace("{}: onUpdate", this);
 
@@ -145,7 +173,7 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	}
 
 	@Override
-	protected void onShutdown(Room room) {
+	protected void onShutdown() {
 
 		log.trace("{}: onShutdown", this);
 	}
@@ -163,38 +191,49 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 	}
 
 	@Override
-	public boolean considerBet(RoulettePlayer player, RouletteBet bet) {
+	public void considerBet(RoulettePlayer player, RouletteBet bet) {
 
 		log.trace("{}: considerBet(player={}, bet={})",
 				this, player, bet);
 
 		// Must be in a betting phase
 		if( !isBettingAllowed() ) {
-			log.trace("{}: Rejecting bet (betting not currently allowed)", this);
-			return false;
+			room.getEventBroker().raiseEvent(
+					new RouletteCroupier.BetRejectedEvent(
+							player, bet,
+							"betting not currently allowed"));
+			return;
 		}
 		
 		// Player must be seated at the table
 		if( !getGameState().getPlayers().contains(player) ) {
-			log.trace("{}: Rejecting bet (player not in player list)", this);
-			return false;
+			room.getEventBroker().raiseEvent(
+					new RouletteCroupier.BetRejectedEvent(
+							player, bet,
+							"player not in player list"));
+			return;
 		}
 		
 		// Player must have enough chips
 		if( player.getChipCount() < bet.getStake() ) {
-			log.trace("{}: Rejecting bet (not enough chips)", this);
-			return false;
+			room.getEventBroker().raiseEvent(
+					new RouletteCroupier.BetRejectedEvent(
+							player, bet,
+							"player can't cover stake"));
+			return;
 		}
 		
 		// Validate bet
 		if( !bet.isValid(this) ) {
-			log.trace("{}: Rejecting bet (not valid)", this);
-			return false;
+			room.getEventBroker().raiseEvent(
+					new RouletteCroupier.BetRejectedEvent(
+							player, bet,
+							"bet isn't valid"));
+			return;
 		}
 
 		// We're accepting this bet...
 		acceptBet(player, bet);
-		return true;
 	}
 
 	/**
@@ -216,17 +255,12 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 		// TODO: Possibly merge bets?  Player may be putting more chips on an existing bet
 
 		// Add bet to the list of bets
-		// (Imagining a call to the Customer microservice...) 
-		try {
-			
-			log.debug("{}: Bet accepted", this);
-			player.deductChips(bet.getStake());
-			playerBets.add(bet);
-			log.trace("{}: {} now has {} active bet(s)", this, player, playerBets.size());
+		playerBets.add(bet);
+		log.debug("{}: Bet accepted: {} now has {} active bet(s)", this, player, playerBets.size());
 
-		} catch( Exception e ) {
-			
-		}
+		// Raise Event
+		room.getEventBroker().raiseEvent(
+				new RouletteCroupier.BetPlacedEvent(player, bet));
 	}
 
 	@Override
@@ -288,7 +322,10 @@ public class RouletteCroupierImpl extends GameManagerImpl implements RouletteCro
 			return;
 		}
 
+		// Raise Event
+		room.getEventBroker().raiseEvent(
+				new RouletteCroupier.BetWinEvent(player, bet, winnings));
+
 		shout("{} has won {}c with their bet of {}", player, winnings, bet);
-		player.addChips(winnings);
 	}
 }

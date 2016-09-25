@@ -57,11 +57,11 @@ public class RoulettePlayerImpl extends PlayerImpl implements RoulettePlayer {
 	}
 
 	@Override
-	public boolean requestBet(RouletteBet bet) {
+	public void requestBet(RouletteBet bet) {
 
 		log.trace("{}: requestBet(bet={})", this, bet);
 
-		return croupier.considerBet(this, bet);
+		croupier.considerBet(this, bet);
 	}
 	
 	@Override
